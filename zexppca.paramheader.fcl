@@ -1,0 +1,66 @@
+generated_systematic_provider_configuration: {
+   ZExpPCAWeighter_zexprw: {
+      b1: {
+         isSplineable: true
+         paramVariations: [
+            -2,
+            -1,
+            0,
+            1,
+            2
+         ]
+         prettyName: "b1"
+         systParamId: 0
+      }
+      b2: {
+         isSplineable: true
+         paramVariations: [
+            -2,
+            -1,
+            0,
+            1,
+            2
+         ]
+         prettyName: "b2"
+         systParamId: 1
+      }
+      b3: {
+         isSplineable: true
+         paramVariations: [
+            -2,
+            -1,
+            0,
+            1,
+            2
+         ]
+         prettyName: "b3"
+         systParamId: 2
+      }
+      b4: {
+         isSplineable: true
+         paramVariations: [
+            -2,
+            -1,
+            0,
+            1,
+            2
+         ]
+         prettyName: "b4"
+         systParamId: 3
+      }
+      instance_name: "zexprw"
+      parameter_headers: [
+         "b1",
+         "b2",
+         "b3",
+         "b4"
+      ]
+      tool_options: {
+         verbosity_level: 0
+      }
+      tool_type: "ZExpPCAWeighter"
+   }
+   syst_providers: [
+      "ZExpPCAWeighter_zexprw"
+   ]
+}

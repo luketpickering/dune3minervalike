@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+*.root
+*.status
+tmp*card

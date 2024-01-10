@@ -1,3 +1,4 @@
+#include "InteractionModes.h"
 #include "MINERvA_SignalDef.h"
 #include "Measurement1D.h"
 
@@ -8,8 +9,10 @@ public:
   std::unique_ptr<TH3D> f3DHist;
 
   std::unique_ptr<TH3D> f3DHist_CCQE;
+  std::unique_ptr<TH3D> f3DHist_CC2p2h;
   std::unique_ptr<TH3D> f3DHist_CC1pi;
   std::unique_ptr<TH3D> f3DHist_CCDIS;
+  std::unique_ptr<TH3D> f3DHist_Other;
 
   //********************************************************************
   DUNE_3D_MINERvALike(nuiskey samplekey) {
@@ -32,11 +35,11 @@ public:
     // END boilerplate
 
     // 3D binning
-    std::vector<double> ptbins = {0, 0.15, 0.25, 0.33, 0.7, 1, 2.5}; // GeV
-    std::vector<double> pzbins = {1.5, 3.5, 4.5, 7, 8, 20};          // GeV
-    std::vector<double> sumTpbins = {
-        0,   40,  80,  120, 160, 200,  240,  280,
-        320, 360, 400, 600, 800, 1000, 10000}; // MeV
+    std::vector<double> ptbins = {0,     0.075, 0.15, 0.25, 0.325, 0.4,
+                                  0.475, 0.55,  0.7,  0.85, 1.0,   2.5}; // GeV
+    std::vector<double> pzbins = {1.5, 3.5, 4.5, 7.0, 8.0, 10.0, 20.0};  // GeV
+    std::vector<double> sumTpbins = {0,    0.02, 0.04, 0.08, 0.12, 0.16,
+                                     0.24, 0.32, 0.4,  0.6,  0.8}; // GeV
 
     // This histogram is just used to help with the binning, we could manually
     // write the bin-mapping function ourselves
@@ -49,12 +52,20 @@ public:
         "DUNE_3D_MINERvALike_CCQE", "", ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), sumTpbins.size() - 1,
         sumTpbins.data());
+    f3DHist_CC2p2h = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_CC2p2h", "", ptbins.size() - 1, ptbins.data(),
+        pzbins.size() - 1, pzbins.data(), sumTpbins.size() - 1,
+        sumTpbins.data());
     f3DHist_CC1pi = std::make_unique<TH3D>(
         "DUNE_3D_MINERvALike_CC1pi", "", ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), sumTpbins.size() - 1,
         sumTpbins.data());
     f3DHist_CCDIS = std::make_unique<TH3D>(
         "DUNE_3D_MINERvALike_CCDIS", "", ptbins.size() - 1, ptbins.data(),
+        pzbins.size() - 1, pzbins.data(), sumTpbins.size() - 1,
+        sumTpbins.data());
+    f3DHist_Other = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_CCOther", "", ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), sumTpbins.size() - 1,
         sumTpbins.data());
 
@@ -80,45 +91,57 @@ public:
 
     // Get the muon kinematics
     TLorentzVector Pmu = event->GetHMFSParticle(13)->fP;
-    TLorentzVector Pnu = event->GetNeutrinoIn()->fP;
+    TVector3 nudir = event->GetNeutrinoIn()->fP.Vect().Unit();
 
-    Double_t px = Pmu.X() / 1000;
-    Double_t py = Pmu.Y() / 1000;
-    Double_t pt = sqrt(px * px + py * py);
+    static const double toGeV = 1E-3;
 
-    // Don't want to assume the event generators all have neutrino coming along
-    // z pz is muon momentum projected onto the neutrino direction
-    Double_t pz = Pmu.Vect().Dot(Pnu.Vect() * (1.0 / Pnu.Vect().Mag())) / 1000.;
-    // Set Hist Variables
+    double p_para = Pmu.Vect().Dot(nudir) * toGeV;
+    double p_perp = Pmu.Vect().Cross(nudir).Mag() * toGeV;
 
     // Sum up kinetic energy of protons
     double sum_TProt = 0.0;
     for (auto prot : event->GetAllFSProton()) {
-      sum_TProt += prot->KE();
+      sum_TProt += prot->KE() * toGeV;
     }
 
     // find the bin number along each axis
-    int binx = f3DHist->GetXaxis()->FindFixBin(pt);
-    int biny = f3DHist->GetYaxis()->FindFixBin(pz);
+    int binx = f3DHist->GetXaxis()->FindFixBin(p_perp);
+    int biny = f3DHist->GetYaxis()->FindFixBin(p_para);
     int binz = f3DHist->GetZaxis()->FindFixBin(sum_TProt);
 
     // set this as the global bin number, could also use
     // f3DHist->FindFixBin(pt,pz,sum_TProt)
     fXVar = f3DHist->GetBin(binx, biny, binz);
 
-    f3DHist->Fill(pt, pz, sum_TProt);
+    if(!isSignal(event)){
+      return;
+    }
+
+    // only fill this if it isn't an underflow/overflow bin so that we can track
+    // how many live in range
+    if ((binx != 0) && (binx != (f3DHist->GetXaxis()->GetNbins() + 1)) &&
+        (biny != 0) && (biny != (f3DHist->GetYaxis()->GetNbins() + 1)) &&
+        (binz != 0) && (binz != (f3DHist->GetZaxis()->GetNbins() + 1))) {
+      f3DHist->Fill(p_perp, p_para, sum_TProt, Weight);
+    }
 
     // Example of EventIsCCQE as a lambda
-    // auto EventIsCCQE = [](FitEvent *event){ return (event->Mode == 1); };
+    int amode = std::abs(event->Mode);
 
-    // could implement
-    // if(EventIsCCQE(event)){
-    //   f3DHist_CCQE->Fill(pt,pz,sum_TProt);
-    // } else if(EventIsCC1pi(event)){
-    //   f3DHist_CC1pi->Fill(pt,pz,sum_TProt);
-    // } else if(EventIsCCDIS(event)){
-    //   f3DHist_CCDIS->Fill(pt,pz,sum_TProt);
-    // }
+    if (amode == InputHandler::kCCQE) {
+      f3DHist_CCQE->Fill(p_perp, p_para, sum_TProt, Weight);
+    } else if (amode == InputHandler::kCC2p2h) {
+      f3DHist_CC2p2h->Fill(p_perp, p_para, sum_TProt, Weight);
+    } else if ((amode == InputHandler::kCC1piponp) ||
+               (amode == InputHandler::kCC1pi0onn) ||
+               (amode == InputHandler::kCC1piponn)) {
+      f3DHist_CC1pi->Fill(p_perp, p_para, sum_TProt, Weight);
+    } else if ((amode == InputHandler::kCCmultipi) ||
+               (amode == InputHandler::kCCDIS)) {
+      f3DHist_CCDIS->Fill(p_perp, p_para, sum_TProt, Weight);
+    } else {
+      f3DHist_Other->Fill(p_perp, p_para, sum_TProt, Weight);
+    }
   }
 
   //********************************************************************
@@ -127,31 +150,48 @@ public:
     return SignalDef::isCC0pi_MINERvAPTPZ(event, 14, EnuMin, EnuMax);
   }
 
-  void Write(std::string drawOpt) {
+  void SplitWrite3D(std::unique_ptr<TH3D> const &h) {
+    h->Write();
+    h->SetDirectory(nullptr);
 
-    f3DHist->Write();
-    f3DHist->SetDirectory(nullptr);
-
-    for (int x = 0; x < f3DHist->GetXaxis()->GetNbins(); ++x) {
-      for (int y = 0; y < f3DHist->GetYaxis()->GetNbins(); ++y) {
-        TH1 *DUNE_3D_MINERvALike_proj =
-            f3DHist->ProjectionZ((std::string("DUNE_3D_MINERvALike_SumTp_x") +
-                                  std::to_string(x) + "_y" + std::to_string(y))
-                                     .c_str(),
-                                 x + 1, x + 1, y + 1, y + 1);
+    for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
+      for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
+        TH1 *proj =
+            h->ProjectionZ((std::string(h->GetName()) + "_x" +
+                            std::to_string(x) + "_y" + std::to_string(y))
+                               .c_str(),
+                           x + 1, x + 1, y + 1, y + 1, "e");
 
         std::stringstream ss;
-        ss << f3DHist->GetXaxis()->GetBinLowEdge(x + 1) << " < p_t < "
-           << f3DHist->GetXaxis()->GetBinUpEdge(x + 1) << ", "
-           << f3DHist->GetYaxis()->GetBinLowEdge(y + 1) << " < p_t < "
-           << f3DHist->GetYaxis()->GetBinUpEdge(y + 1);
+        ss << h->GetXaxis()->GetBinLowEdge(x + 1) << " < p_t < "
+           << h->GetXaxis()->GetBinUpEdge(x + 1) << " [GeV/c], "
+           << h->GetYaxis()->GetBinLowEdge(y + 1) << " < p_z < "
+           << h->GetYaxis()->GetBinUpEdge(y + 1) << " [GeV/c]";
 
-        DUNE_3D_MINERvALike_proj->SetTitle(ss.str().c_str());
+        double proj_cell_area = (h->GetXaxis()->GetBinUpEdge(x + 1) -
+                                 h->GetXaxis()->GetBinLowEdge(x + 1)) *
+                                (h->GetYaxis()->GetBinUpEdge(y + 1) -
+                                 h->GetYaxis()->GetBinLowEdge(y + 1));
 
-        DUNE_3D_MINERvALike_proj->Write();
-        DUNE_3D_MINERvALike_proj->SetDirectory(nullptr);
+        proj->Scale(fScaleFactor / proj_cell_area, "WIDTH");
+
+        proj->SetTitle(ss.str().c_str());
+        proj->GetXaxis()->SetTitle("#Sigma T_{p} [GeV]");
+
+        proj->Write();
+        proj->SetDirectory(nullptr);
       }
     }
+  }
+
+  void Write(std::string drawOpt) {
+
+    SplitWrite3D(f3DHist);
+    SplitWrite3D(f3DHist_CCQE);
+    SplitWrite3D(f3DHist_CC2p2h);
+    SplitWrite3D(f3DHist_CC1pi);
+    SplitWrite3D(f3DHist_CCDIS);
+    SplitWrite3D(f3DHist_Other);
 
     // we have to tidy this up in this SO if we don't want horrible crashes on
     // program tear down

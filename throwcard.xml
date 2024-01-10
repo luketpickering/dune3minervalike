@@ -1,0 +1,12 @@
+<nuisance>
+  <config UseSVDInverse='1' />
+
+  <DUNERwt ConfigFHiCL="zexppca.paramheader.fcl" />
+
+  <parameter name="b1" nominal="-1" type="nusyst_parameter" state="FREE" low="-2" high="2" step="1" />
+  <parameter name="b2" nominal="0" type="nusyst_parameter" state="FREE" low="-2" high="2" step="1" />
+  <parameter name="b3" nominal="0" type="nusyst_parameter" state="FREE" low="-2" high="2" step="1" />
+  <parameter name="b4" nominal="0" type="nusyst_parameter" state="FREE" low="-2" high="2" step="1" />
+
+  <sample name='DUNE_3D_MINERvALike' input='GENIE:genie.DUNE_ND.numu.merged.root' />
+</nuisance>
