@@ -1,0 +1,2 @@
+DUNE_3D_MINERvALike.so: DUNE_3D_MINERvALike.cxx
+	BuildDynamicSample DUNE_3D_MINERvALike.cxx DUNE_3D_MINERvALike.so DUNE_3D_MINERvALike
