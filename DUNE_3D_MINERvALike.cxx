@@ -89,58 +89,93 @@ public:
     if (event->NumFSParticle(13) == 0)
       return;
 
+    auto d3dml_bx = dynamic_cast<D3DMLBox *>(GetBox());
+    d3dml_bx->mode = event->Mode;
+
     // Get the muon kinematics
     TLorentzVector Pmu = event->GetHMFSParticle(13)->fP;
     TVector3 nudir = event->GetNeutrinoIn()->fP.Vect().Unit();
 
     static const double toGeV = 1E-3;
 
-    double p_para = Pmu.Vect().Dot(nudir) * toGeV;
-    double p_perp = Pmu.Vect().Cross(nudir).Mag() * toGeV;
+    d3dml_bx->p_para = Pmu.Vect().Dot(nudir) * toGeV;
+    d3dml_bx->p_perp = Pmu.Vect().Cross(nudir).Mag() * toGeV;
 
     // Sum up kinetic energy of protons
-    double sum_TProt = 0.0;
+    d3dml_bx->sum_TProt = 0.0;
     for (auto prot : event->GetAllFSProton()) {
-      sum_TProt += prot->KE() * toGeV;
+      d3dml_bx->sum_TProt += prot->KE() * toGeV;
     }
 
     // find the bin number along each axis
-    int binx = f3DHist->GetXaxis()->FindFixBin(p_perp);
-    int biny = f3DHist->GetYaxis()->FindFixBin(p_para);
-    int binz = f3DHist->GetZaxis()->FindFixBin(sum_TProt);
+    int binx = f3DHist->GetXaxis()->FindFixBin(d3dml_bx->p_perp);
+    int biny = f3DHist->GetYaxis()->FindFixBin(d3dml_bx->p_para);
+    int binz = f3DHist->GetZaxis()->FindFixBin(d3dml_bx->sum_TProt);
 
     // set this as the global bin number, could also use
     // f3DHist->FindFixBin(pt,pz,sum_TProt)
     fXVar = f3DHist->GetBin(binx, biny, binz);
+  }
 
-    if(!isSignal(event)){
-      return;
+  struct D3DMLBox : public MeasurementVariableBox1D {
+    D3DMLBox()
+        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0} {}
+
+    MeasurementVariableBox *CloneSignalBox() {
+      auto cl = new D3DMLBox();
+
+      cl->fX = fX;
+      cl->mode = mode;
+      cl->p_para = p_para;
+      cl->p_perp = p_perp;
+      cl->sum_TProt = sum_TProt;
+      return cl;
     }
 
-    // only fill this if it isn't an underflow/overflow bin so that we can track
-    // how many live in range
-    if ((binx != 0) && (binx != (f3DHist->GetXaxis()->GetNbins() + 1)) &&
-        (biny != 0) && (biny != (f3DHist->GetYaxis()->GetNbins() + 1)) &&
-        (binz != 0) && (binz != (f3DHist->GetZaxis()->GetNbins() + 1))) {
-      f3DHist->Fill(p_perp, p_para, sum_TProt, Weight);
+    void Reset() {
+      MeasurementVariableBox1D::Reset();
+      mode = 0;
+      p_para = 0;
+      p_perp = 0;
+      sum_TProt = 0;
     }
 
-    // Example of EventIsCCQE as a lambda
-    int amode = std::abs(event->Mode);
+    int mode;
+    double p_para;
+    double p_perp;
+    double sum_TProt;
+  };
+
+  MeasurementVariableBox *CreateBox() { return new D3DMLBox(); };
+
+  void FillExtraHistograms(MeasurementVariableBox *vars, double weight) {
+    Measurement1D::FillExtraHistograms(vars, weight);
+
+    auto d3dml_bx = dynamic_cast<D3DMLBox *>(vars);
+
+    f3DHist->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                         d3dml_bx->sum_TProt, weight);
+
+    int amode = std::abs(d3dml_bx->mode);
 
     if (amode == InputHandler::kCCQE) {
-      f3DHist_CCQE->Fill(p_perp, p_para, sum_TProt, Weight);
+      f3DHist_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                         d3dml_bx->sum_TProt, weight);
     } else if (amode == InputHandler::kCC2p2h) {
-      f3DHist_CC2p2h->Fill(p_perp, p_para, sum_TProt, Weight);
+      f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                           d3dml_bx->sum_TProt, weight);
     } else if ((amode == InputHandler::kCC1piponp) ||
                (amode == InputHandler::kCC1pi0onn) ||
                (amode == InputHandler::kCC1piponn)) {
-      f3DHist_CC1pi->Fill(p_perp, p_para, sum_TProt, Weight);
+      f3DHist_CC1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->sum_TProt, weight);
     } else if ((amode == InputHandler::kCCmultipi) ||
                (amode == InputHandler::kCCDIS)) {
-      f3DHist_CCDIS->Fill(p_perp, p_para, sum_TProt, Weight);
+      f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->sum_TProt, weight);
     } else {
-      f3DHist_Other->Fill(p_perp, p_para, sum_TProt, Weight);
+      f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->sum_TProt, weight);
     }
   }
 
@@ -180,6 +215,7 @@ public:
 
         proj->Write();
         proj->SetDirectory(nullptr);
+        delete proj;
       }
     }
   }
@@ -197,11 +233,17 @@ public:
     // program tear down
     fDataHist->Write();
     fDataHist->SetDirectory(nullptr);
-    delete fDataHist;
-    fDataHist = nullptr;
     fMCHist->Write();
     fMCHist->SetDirectory(nullptr);
-    delete fMCHist;
-    fMCHist = nullptr;
+  }
+
+  void ResetAll() {
+    Measurement1D::ResetAll();
+    f3DHist->Reset();
+    f3DHist_CCQE->Reset();
+    f3DHist_CC2p2h->Reset();
+    f3DHist_CC1pi->Reset();
+    f3DHist_CCDIS->Reset();
+    f3DHist_Other->Reset();
   }
 };

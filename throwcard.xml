@@ -1,5 +1,6 @@
 <nuisance>
-  <config UseSVDInverse='1' />
+  <config UseSVDInverse="1" />
+  <config SignalReconfigures="1" />
 
   <DUNERwt ConfigFHiCL="zexppca.paramheader.fcl" />
 
