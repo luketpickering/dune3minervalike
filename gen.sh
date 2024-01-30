@@ -2,13 +2,23 @@
 
 tsp -S 8
 
-for i in 0 1 2 3 4 5 6 7; do
+cd ${GENIE}/config
+cp Messenger_laconic.xml Messenger.xml 
+cd -
+
+DUNE_ND_FLUX=$(nuis flux DUNE_ND)
+DUNE_ND_FLUX_RANGE=$(nuis flux range ${DUNE_ND_FLUX})
+
+for i in {0..20}; do
 
   sleep 1
 
   #generate in separate subfolders to make sure they don't argue while
   mkdir gen_${i}; cd gen_${i}
-  tsp NUIS_QUIET=ON nuis-gen-GENIE -E DUNE_ND -n 200000 -t Ar -o genie.DUNE_ND.numu.${i}.root
+  tsp gevgen -p 14 -t 1000180400 -n 1000000 \
+    -f ${DUNE_ND_FLUX} -e ${DUNE_ND_FLUX_RANGE} \
+    -o genie.DUNE_ND.numu.${i}.root \
+    --tune ${GENIE_XSEC_TUNE} --cross-sections ${GENIE_XSEC_FILE}
   cd -
 
 done

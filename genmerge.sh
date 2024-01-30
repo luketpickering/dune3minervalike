@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FILES=""
-for i in 0 1 2 3 4 5 6 7; do
+for i in {0..20}; do
   FILES="${FILES},gen_${i}/genie.DUNE_ND.numu.${i}.root"
 done
 
