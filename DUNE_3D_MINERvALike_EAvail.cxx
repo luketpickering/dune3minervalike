@@ -2,7 +2,7 @@
 #include "/root/software/nuisance_version2/nuisance/src/MINERvA/MINERvA_SignalDef.h"
 #include "Measurement1D.h"
 #include "/root/software/nuisance_version2/nuisance/src/MCStudies/GenericFlux_Vectors.h"
-
+#include "TH1D.h"
 #include "TH3D.h"
 
 class DUNE_3D_MINERvALike_EAvail: public Measurement1D {
@@ -21,6 +21,15 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi;
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other;
+
+  std::unique_ptr<TH1D> f1DHist_EAvail_ptpz;  //pointers to 1D projections of each component in ptpz in 1D
+  std::unique_ptr<TH1D> f1DHist_EAvail_CCQE_ptpz; 
+  std::unique_ptr<TH1D> f1DHist_EAvail_CC2p2h_ptpz;
+  std::unique_ptr<TH1D> f1DHist_EAvail_CC1p1pi_ptpz;
+  std::unique_ptr<TH1D> f1DHist_EAvail_CCDIS_ptpz;
+  std::unique_ptr<TH1D> f1DHist_EAvail_Other_ptpz;
+
+
 
   std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_midW;
@@ -120,6 +129,16 @@ public:
         pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
         EAvail_bins.data());
 
+
+    
+    // The 1D projections of 3D histograms
+    f1DHist_EAvail_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_ptpz") ;
+    f1DHist_EAvail_CCQE_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CCQE_ptpz");
+    f1DHist_EAvail_CC2p2h_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CC2p2h_ptpz");
+    f1DHist_EAvail_CC1p1pi_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CC1p1pi_ptpz");
+    f1DHist_EAvail_CCDIS_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CCDIS_ptpz");
+    f1DHist_EAvail_Other_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_Other_ptpz");
+  
 
     // Now the invariant mass histograms for available energy
     f3DHist_EAvail_lowW =
@@ -295,11 +314,13 @@ public:
                          d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      //f1DHist_EAvail_CCQE_ptpz->Project3D("xy"); //Hist->Project3D(“xy”)->Write(“projhistname”);
     } else if (amode == InputHandler::kCC2p2h) {
       f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                            d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      //f1DHist_EAvail_CC2p2h_ptpz->Project3D("xy");
     } else if ((amode == InputHandler::kCC1piponp) ||
                (amode == InputHandler::kCC1pi0onn) ||
                (amode == InputHandler::kCC1piponn)) {
@@ -307,17 +328,20 @@ public:
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CC1p1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      //f1DHist_EAvail_CC1p1i_ptpz->Project3D("xy")
     } else if ((amode == InputHandler::kCCmultipi) ||
                (amode == InputHandler::kCCDIS)) {
       f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      //f1DHist_EAvail_CCDIS_ptpz->Project3D("xy");
     } else {
       f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      //f1DHist_EAvail_Other_ptpz->Project3D("xy");
     }
 
      //if statments to fill W hists
@@ -332,14 +356,7 @@ public:
       f3DHist_EAvail_highW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->W, weight);;
     } 
-
-
   }
-
-
- 
- 
-
   //********************************************************************
   bool isSignal(FitEvent *event) {
     //********************************************************************
@@ -398,6 +415,20 @@ public:
     SplitWrite3D(f3DHist_EAvail_CCDIS);
     SplitWrite3D(f3DHist_EAvail_Other);
 
+    f1DHist_ptpz = f3DHist->Project3D("xy")->Write("f1DHist_ptpz");  //pointers to 1D projections of each component in ptpz in 1D
+    f1DHist_CCQE_ptpz = f3DHist_CCQE->Project3D("xy")->Write("f1DHist_CCQE_ptpz"); 
+    f1DHist_CC2p2h_ptpz=f3DHist_CC2p2h->Project3D("xy")->Write("f1DHist_CC2p2h_ptpz")
+    f1DHist_CC1p1pi_ptpz =f3DHist_CC1p1pi->Project3D("xy")->Write("f1DHist_CC1p1pi_ptpz");
+    f1DHist_CCDIS_ptpz=f3DHist_CCDIS->Project3D("xy")->Write("f1DHist_CCDIS_ptpz");
+    f1DHist_Other_ptpz=f3DHist_Other->Project3D("xy")->Write("f1DHist_Other_ptpz");
+
+    f1DHist_EAvail_ptpz = f3DHist->Project3D("xy")->Write("f1DHist_EAvail_ptpz");  //pointers to 1D projections of each component in ptpz in 1D
+    f1DHist_EAvail_CCQE_ptpz = f3DHist_CCQE->Project3D("xy")->Write("f1DHist_EAvail_CCQE_ptpz"); 
+    f1DHist_EAvail_CC2p2h_ptpz=f3DHist_CC2p2h->Project3D("xy")->Write("f1DHist_EAvail_CC2p2h_ptpz")
+    f1DHist_EAvail_CC1p1pi_ptpz =f3DHist_CC1p1pi->Project3D("xy")->Write("f1DHist_EAvail_CC1p1pi_ptpz");
+    f1DHist_EAvail_CCDIS_ptpz=f3DHist_CCDIS->Project3D("xy")->Write("f1DHist_EAvail_CCDIS_ptpz");
+    f1DHist_EAvail_Other_ptpz=f3DHist_Other->Project3D("xy")->Write("f1DHist_EAvail_Other_ptpz");
+
     // we have to tidy this up in this SO if we don't want horrible crashes on
     // program tear down
     fDataHist->Write();
@@ -423,6 +454,23 @@ public:
     f3DHist_EAvail_Other->Reset();
 
     f3DHist_EAvail_lowW->Reset();
+    f3DHist_EAvail_midW->Reset();
+    f3DHist_EAvail_highW->Reset();
+
+
+    f1DHist_EAvail_ptpz->Reset();  //pointers to 1D projections of each component in ptpz in 1D
+    f1DHist_EAvail_CCQE_ptpz->Reset(); 
+    f1DHist_EAvail_CC2p2h_ptpz->Reset();
+    f1DHist_EAvail_CC1p1pi_ptpz->Reset();
+    f1DHist_EAvail_CCDIS_ptpz->Reset();
+    f1DHist_EAvail_Other_ptpz->Reset();
+
+    f1DHist_ptpz->Reset();  //pointers to 1D projections of each component in ptpz in 1D
+    f1DHist_CCQE_ptpz->Reset(); 
+    f1DHist_CC2p2h_ptpz->Reset();
+    f1DHist_CC1p1pi_ptpz->Reset();
+    f1DHist_CCDIS_ptpz->Reset();
+    f1DHist_Other_ptpz->Reset();
 
 
   }
