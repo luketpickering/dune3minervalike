@@ -1,6 +1,7 @@
 #include "InteractionModes.h"
 #include "/root/software/nuisance_version2/nuisance/src/MINERvA/MINERvA_SignalDef.h"
 #include "Measurement1D.h"
+#include "/root/software/nuisance_version2/nuisance/src/MCStudies/GenericFlux_Vectors.h"
 
 #include "TH3D.h"
 
@@ -21,6 +22,9 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other;
 
+  std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
+  std::unique_ptr<TH3D> f3DHist_EAvail_midW;
+  std::unique_ptr<TH3D> f3DHist_EAvail_highW;
   //********************************************************************
   DUNE_3D_MINERvALike_EAvail(nuiskey samplekey){
     //********************************************************************
@@ -42,11 +46,18 @@ public:
     // END boilerplate
 
     // 3D binning
+    /*
     std::vector<double> ptbins = {0,     0.075, 0.15, 0.25, 0.325, 0.4, 0.475, 0.55,  0.7,  0.85, 1.0,   2.5}; // GeV
     std::vector<double> pzbins = {1.5, 3.5, 4.5, 7.0, 8.0, 10.0, 20.0};  // GeV
     std::vector<double> sumTpbins = {0,    0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6,  0.8}; // GeV
     std::vector<double> EAvail_bins = {0.04, 0.08}; // GeV
-
+    */
+   // std::vector<double> ptbins = {0.4, 0.475}; // GeV
+    std::vector<double> ptbins = {0,  0.05,   0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,0.55,0.6,0.65 , 0.7,0.75,0.8 ,0.9, 1.0, 1.5,2.0,  2.5}; // GeV
+    //std::vector<double> pzbins = {1.5, 3.5};  // GeV
+    std::vector<double> pzbins = {0.5,1.0,1.5,2,2.5,3, 3.5, 4, 4.5,5.0,6.0, 7.0, 8.0,9.0,10.0, 12.5, 15.0,17.5, 20.0};  // GeV
+    std::vector<double> sumTpbins = {0,    0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
+    std::vector<double> EAvail_bins = {0, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
 
     // This histogram is just used to help with the binning, we could manually
     // write the bin-mapping function ourselves
@@ -110,14 +121,26 @@ public:
         EAvail_bins.data());
 
 
+    // Now the invariant mass histograms for available energy
+    f3DHist_EAvail_lowW =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_lowW", "",ptbins.size() - 1, ptbins.data(),
+        pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
+    f3DHist_EAvail_midW =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_midW", "",ptbins.size() - 1, ptbins.data(),
+        pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
+    f3DHist_EAvail_highW =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_W", "",ptbins.size() - 1, ptbins.data(),
+        pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
     // this is just to appease NUISANCE, it is copied to make the tracked 'MC'
     // histogram
     fDataHist = new TH1D("DUNE_3D_MINERvALike_data", "", f3DHist->GetNcells(),
                          0, f3DHist->GetNcells());
-
-    fDataHist = new TH1D("DUNE_3D_MINERvALike_data_EAvail", "", f3DHist_EAvail->GetNcells(),
-                         0, f3DHist_EAvail->GetNcells());
-
     // more boilerplate
     FinaliseSampleSettings();
     fScaleFactor =
@@ -171,7 +194,26 @@ public:
     Eav = FitUtils::GetErecoil_MINERvA_LowRecoil(event) / 1.E3;
     //Put the available energy into a box function
     d3dml_bx->E_Avail = Eav;
+
+    // Basic interaction kinematics
+    double Q2 = -1 * (neutrino->fP - muon->fP).Mag2() / 1E6;
+    //double  q0 = (neutrino->fP - muon->fP).E() / 1E3;
+    // Get W_true with assumption of initial state nucleon at rest
+    float m_n = (float)PhysConst::mass_proton;
+    // Q2 assuming nucleon at rest
+    double W_nuc_rest = sqrt(-Q2 + 2 * m_n * q0 + m_n * m_n);
+    double  W = W_nuc_rest; // For want of a better thing to do
+    d3dml_bx->W;
+
+
+
+
+
     }
+
+    
+
+
 
     static const double toGeV = 1E-3;
 
@@ -199,7 +241,7 @@ public:
 
   struct D3DMLBox : public MeasurementVariableBox1D {
     D3DMLBox()
-        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0} {}
+        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0}, W{0} {}
 
     MeasurementVariableBox *CloneSignalBox() {
       auto cl = new D3DMLBox();
@@ -210,6 +252,7 @@ public:
       cl->p_perp = p_perp;
       cl->sum_TProt = sum_TProt;
       cl->E_Avail = E_Avail;
+      cl->W = W;
       return cl;
     }
 
@@ -220,6 +263,7 @@ public:
       p_perp = 0;
       sum_TProt = 0;
       E_Avail = 0;
+      W = 0;
     }
 
     int mode;
@@ -227,6 +271,7 @@ public:
     double p_perp;
     double sum_TProt;
     double E_Avail;
+    double W;
   };
   
   MeasurementVariableBox *CreateBox() { return new D3DMLBox(); };
@@ -243,6 +288,7 @@ public:
                          d3dml_bx->E_Avail, weight);
 
     int amode = std::abs(d3dml_bx->mode);
+    double W = std::abs(d3dml_bx->W);
 
     if (amode == InputHandler::kCCQE) {
       f3DHist_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
@@ -273,7 +319,25 @@ public:
       f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
     }
+
+     //if statments to fill W hists
+    if (W < 1.4) {
+      f3DHist_EAvail_lowW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->W, weight);
+    } else if (1.4 < W < 2.0) {
+      f3DHist_EAvail_midW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->W, weight);;
+    } 
+    else if ( W > 2.0) {
+      f3DHist_EAvail_highW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->W, weight);;
+    } 
+
+
   }
+
+
+ 
  
 
   //********************************************************************
@@ -357,5 +421,9 @@ public:
     f3DHist_EAvail_CC1p1pi->Reset();
     f3DHist_EAvail_CCDIS->Reset();
     f3DHist_EAvail_Other->Reset();
+
+    f3DHist_EAvail_lowW->Reset();
+
+
   }
 };
