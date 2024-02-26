@@ -4,6 +4,8 @@
 #include "/root/software/nuisance_version2/nuisance/src/MCStudies/GenericFlux_Vectors.h"
 #include "TH1D.h"
 #include "TH3D.h"
+#include "TH2D.h"
+#include "TH2.h"
 
 class DUNE_3D_MINERvALike_EAvail: public Measurement1D {
 public:
@@ -21,15 +23,6 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi;
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other;
-
-  std::unique_ptr<TH1D> f1DHist_EAvail_ptpz;  //pointers to 1D projections of each component in ptpz in 1D
-  std::unique_ptr<TH1D> f1DHist_EAvail_CCQE_ptpz; 
-  std::unique_ptr<TH1D> f1DHist_EAvail_CC2p2h_ptpz;
-  std::unique_ptr<TH1D> f1DHist_EAvail_CC1p1pi_ptpz;
-  std::unique_ptr<TH1D> f1DHist_EAvail_CCDIS_ptpz;
-  std::unique_ptr<TH1D> f1DHist_EAvail_Other_ptpz;
-
-
 
   std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_midW;
@@ -77,7 +70,7 @@ public:
 
 
     f3DHist_EAvail =
-        std::make_unique<TH3D>("f3DHist_f3DHist_EAvail", "", ptbins.size() - 1,
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail", "", ptbins.size() - 1,
                                ptbins.data(), pzbins.size() - 1, pzbins.data(),
                                EAvail_bins.size() - 1, EAvail_bins.data());
 
@@ -116,7 +109,7 @@ public:
         EAvail_bins.data());
 
     f3DHist_EAvail_CC1p1pi =
-        std::make_unique<TH3D>("f3DHist_EAvail_CC1p1pi", "", ptbins.size() - 1, ptbins.data(),
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC1p1pi", "", ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
         EAvail_bins.data());
     
@@ -130,7 +123,7 @@ public:
         EAvail_bins.data());
 
 
-    
+    /*
     // The 1D projections of 3D histograms
     f1DHist_EAvail_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_ptpz") ;
     f1DHist_EAvail_CCQE_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CCQE_ptpz");
@@ -138,7 +131,7 @@ public:
     f1DHist_EAvail_CC1p1pi_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CC1p1pi_ptpz");
     f1DHist_EAvail_CCDIS_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_CCDIS_ptpz");
     f1DHist_EAvail_Other_ptpz = std::make_unique<TH1D>("f1DHist_EAvail_Other_ptpz");
-  
+  */
 
     // Now the invariant mass histograms for available energy
     f3DHist_EAvail_lowW =
@@ -152,7 +145,7 @@ public:
         EAvail_bins.data()) ;
 
     f3DHist_EAvail_highW =
-        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_W", "",ptbins.size() - 1, ptbins.data(),
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_highW", "",ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
         EAvail_bins.data()) ;
 
@@ -222,12 +215,8 @@ public:
     // Q2 assuming nucleon at rest
     double W_nuc_rest = sqrt(-Q2 + 2 * m_n * q0 + m_n * m_n);
     double  W = W_nuc_rest; // For want of a better thing to do
-    d3dml_bx->W;
-
-
-
-
-
+    //std::cout << " W = "  << W << "   Q2 = " << Q2 << "   q0 = " << q0 << "   m_n =   "  << m_n <<  "  E available  =  " << Eav << std::endl;
+    d3dml_bx->W = W_nuc_rest;
     }
 
     
@@ -314,13 +303,11 @@ public:
                          d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
-      //f1DHist_EAvail_CCQE_ptpz->Project3D("xy"); //Hist->Project3D(“xy”)->Write(“projhistname”);
     } else if (amode == InputHandler::kCC2p2h) {
       f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                            d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
-      //f1DHist_EAvail_CC2p2h_ptpz->Project3D("xy");
     } else if ((amode == InputHandler::kCC1piponp) ||
                (amode == InputHandler::kCC1pi0onn) ||
                (amode == InputHandler::kCC1piponn)) {
@@ -328,33 +315,33 @@ public:
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CC1p1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
-      //f1DHist_EAvail_CC1p1i_ptpz->Project3D("xy")
     } else if ((amode == InputHandler::kCCmultipi) ||
                (amode == InputHandler::kCCDIS)) {
       f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
-      //f1DHist_EAvail_CCDIS_ptpz->Project3D("xy");
     } else {
       f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
-      //f1DHist_EAvail_Other_ptpz->Project3D("xy");
     }
 
      //if statments to fill W hists
     if (W < 1.4) {
       f3DHist_EAvail_lowW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->W, weight);
-    } else if (1.4 < W < 2.0) {
+      d3dml_bx->E_Avail, weight);
+      //std::cout << " W should be less than 1.4 , it is" << W <<std::endl;
+    } else if (1.4 < W && W < 2.0) {
       f3DHist_EAvail_midW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->W, weight);;
+      d3dml_bx->E_Avail, weight);
+     // std::cout << " W should be 1.4 < W < 2.0 , it is" << W <<std::endl;
     } 
-    else if ( W > 2.0) {
+    else if (W > 2.0){
       f3DHist_EAvail_highW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->W, weight);;
+      d3dml_bx->E_Avail, weight);
+      //std::cout << " W should be > 2.0 , it is" << W <<std::endl;
     } 
   }
   //********************************************************************
@@ -368,13 +355,18 @@ public:
     h->Write();
     h->SetDirectory(nullptr);
 
-    for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
-      for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
-        TH1 *proj =
-            h->ProjectionZ((std::string(h->GetName()) + "_x" +
-                            std::to_string(x) + "_y" + std::to_string(y))
-                               .c_str(),
-                           x + 1, x + 1, y + 1, y + 1, "e");
+    
+    auto ptpzproj = std::unique_ptr<TH2>(static_cast<TH2*>(h->Project3D("xy")));
+    
+
+      for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
+        for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
+          TH1 *proj =
+              h->ProjectionZ((std::string(h->GetName()) + "_x" +
+                              std::to_string(x) + "_y" + std::to_string(y))
+                                .c_str(),
+                            x + 1, x + 1, y + 1, y + 1, "e");
+    
 
         std::stringstream ss;
         ss << h->GetXaxis()->GetBinLowEdge(x + 1) << " < p_t < "
@@ -388,7 +380,7 @@ public:
                                  h->GetYaxis()->GetBinLowEdge(y + 1));
 
         proj->Scale(fScaleFactor / proj_cell_area, "WIDTH");
-
+        ptpzproj->SetBinContent(x+1,y+1, ptpzproj->GetBinContent(x+1,y+1)/proj_cell_area); //divide by the x, y bin widths 
         proj->SetTitle(ss.str().c_str());
         proj->GetXaxis()->SetTitle("#Sigma T_{p} [GeV] or Available Energy ");
 
@@ -397,6 +389,11 @@ public:
         delete proj;
       }
     }
+
+    ptpzproj->Write();
+    //make sure to tell ROOT that it doesn't own this histogram so that we can delete it
+    ptpzproj->SetDirectory(nullptr);
+
   }
 
   void Write(std::string drawOpt) {
@@ -415,19 +412,9 @@ public:
     SplitWrite3D(f3DHist_EAvail_CCDIS);
     SplitWrite3D(f3DHist_EAvail_Other);
 
-    f1DHist_ptpz = f3DHist->Project3D("xy")->Write("f1DHist_ptpz");  //pointers to 1D projections of each component in ptpz in 1D
-    f1DHist_CCQE_ptpz = f3DHist_CCQE->Project3D("xy")->Write("f1DHist_CCQE_ptpz"); 
-    f1DHist_CC2p2h_ptpz=f3DHist_CC2p2h->Project3D("xy")->Write("f1DHist_CC2p2h_ptpz")
-    f1DHist_CC1p1pi_ptpz =f3DHist_CC1p1pi->Project3D("xy")->Write("f1DHist_CC1p1pi_ptpz");
-    f1DHist_CCDIS_ptpz=f3DHist_CCDIS->Project3D("xy")->Write("f1DHist_CCDIS_ptpz");
-    f1DHist_Other_ptpz=f3DHist_Other->Project3D("xy")->Write("f1DHist_Other_ptpz");
-
-    f1DHist_EAvail_ptpz = f3DHist->Project3D("xy")->Write("f1DHist_EAvail_ptpz");  //pointers to 1D projections of each component in ptpz in 1D
-    f1DHist_EAvail_CCQE_ptpz = f3DHist_CCQE->Project3D("xy")->Write("f1DHist_EAvail_CCQE_ptpz"); 
-    f1DHist_EAvail_CC2p2h_ptpz=f3DHist_CC2p2h->Project3D("xy")->Write("f1DHist_EAvail_CC2p2h_ptpz")
-    f1DHist_EAvail_CC1p1pi_ptpz =f3DHist_CC1p1pi->Project3D("xy")->Write("f1DHist_EAvail_CC1p1pi_ptpz");
-    f1DHist_EAvail_CCDIS_ptpz=f3DHist_CCDIS->Project3D("xy")->Write("f1DHist_EAvail_CCDIS_ptpz");
-    f1DHist_EAvail_Other_ptpz=f3DHist_Other->Project3D("xy")->Write("f1DHist_EAvail_Other_ptpz");
+    SplitWrite3D(f3DHist_EAvail_lowW);
+    SplitWrite3D(f3DHist_EAvail_midW);
+    SplitWrite3D(f3DHist_EAvail_highW);
 
     // we have to tidy this up in this SO if we don't want horrible crashes on
     // program tear down
@@ -456,22 +443,6 @@ public:
     f3DHist_EAvail_lowW->Reset();
     f3DHist_EAvail_midW->Reset();
     f3DHist_EAvail_highW->Reset();
-
-
-    f1DHist_EAvail_ptpz->Reset();  //pointers to 1D projections of each component in ptpz in 1D
-    f1DHist_EAvail_CCQE_ptpz->Reset(); 
-    f1DHist_EAvail_CC2p2h_ptpz->Reset();
-    f1DHist_EAvail_CC1p1pi_ptpz->Reset();
-    f1DHist_EAvail_CCDIS_ptpz->Reset();
-    f1DHist_EAvail_Other_ptpz->Reset();
-
-    f1DHist_ptpz->Reset();  //pointers to 1D projections of each component in ptpz in 1D
-    f1DHist_CCQE_ptpz->Reset(); 
-    f1DHist_CC2p2h_ptpz->Reset();
-    f1DHist_CC1p1pi_ptpz->Reset();
-    f1DHist_CCDIS_ptpz->Reset();
-    f1DHist_Other_ptpz->Reset();
-
 
   }
 };
