@@ -6,6 +6,16 @@
 #include "TH3D.h"
 #include "TH2D.h"
 #include "TH2.h"
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <numeric>
+#include <stdlib.h>
+#include <string>
+#include <vector>
+
+using namespace std;
+
 
 class DUNE_3D_MINERvALike_EAvail: public Measurement1D {
 public:
@@ -27,6 +37,21 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_midW;
   std::unique_ptr<TH3D> f3DHist_EAvail_highW;
+
+
+  /* a function to generate numpy linspace */
+//template <typename T>
+  template <typename T>
+    std::vector<T> linspace(T a, T b, size_t N) {
+        T h = (b - a) / static_cast<T>(N-1);
+        std::vector<T> xs(N);
+        typename std::vector<T>::iterator x;
+        T val;
+        for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h)
+            *x = val;
+        return xs;
+    }
+
   //********************************************************************
   DUNE_3D_MINERvALike_EAvail(nuiskey samplekey){
     //********************************************************************
@@ -45,9 +70,17 @@ public:
     fSettings.SetYTitle("p_{z} [GeV/#it{c}]");
     fSettings.SetZTitle("#Sigma T_{prot} [GeV]");
 
+    
+
     // END boilerplate
 
     // 3D binning
+
+    std::vector<double> pzbins = linspace(0.5,20.0,399);
+
+    std::vector<double> ptbins =linspace(0.0, 2.5,125) ;
+
+
     /*
     std::vector<double> ptbins = {0,     0.075, 0.15, 0.25, 0.325, 0.4, 0.475, 0.55,  0.7,  0.85, 1.0,   2.5}; // GeV
     std::vector<double> pzbins = {1.5, 3.5, 4.5, 7.0, 8.0, 10.0, 20.0};  // GeV
@@ -72,7 +105,7 @@ public:
                                 }; // GeV */
     //std::vector<double> pzbins = {1.5, 3.5};  // GeV
     //std::vector<double> pzbins = {0.5,1.0,1.5,2,2.5,3, 3.5, 4, 4.5,5.0,6.0, 7.0, 8.0,9.0,10.0, 12.5, 15.0,17.5, 20.0};  // GeV
-
+    /*
    std::vector<double> pzbins={0.5,  0.55 ,0.6 , 0.65 ,0.7 , 0.75, 0.8 , 0.85, 0.9 , 0.95, 1. ,  1.05 ,1.1,  1.15,
                                 1.2,  1.25 ,1.3 , 1.35 ,1.4 , 1.45, 1.5 , 1.55, 1.6 , 1.65, 1.7,  1.75 ,1.8,  1.85,
                                 1.9 , 1.95, 2.0,   2.05, 2.1 , 2.15, 2.2 , 2.25, 2.3 , 2.35, 2.4,  2.45, 2.5,  2.55,
@@ -87,16 +120,20 @@ public:
                                 8.2 , 8.25, 8.3 , 8.35, 8.4 , 8.45, 8.5 , 8.55, 8.6 , 8.65, 8.7,  8.75, 8.8,  8.85,
                                 8.9 , 8.95, 9.0,   9.05, 9.1,  9.15, 9.2,  9.25, 9.3 , 9.35, 9.4,  9.45, 9.5,  9.55,
                                 9.6 , 9.65, 9.7 , 9.75, 9.8 , 9.85 ,9.9  ,9.95,10, 10.2,
-                                10.4,10.6,10.8,12,12.2,12.4,12.6,12.8,13,14,15,16,17,18,19,20}; 
+                                10.4,10.6,10.8,12,12.2,12.4,12.6,12.8,13,14,15,16,17,18,19,20}; */
 
    // std::vector<double> ptbins = {0,  0.05,   0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,0.55,0.6,0.65 , 0.7,0.75,0.8 ,0.9, 1.0, 1.5,2.0,  2.5}; // GeV
-    std::vector<double> ptbins = {0,  0.05,   0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,0.55,0.6,0.65, 0.7,0.75,0.8 ,0.85,0.9, 0.95, 1.0, 1.1,1.2 ,1.3,1.4, 1.5,2.0,  2.5}; 
+  //  std::vector<double> ptbins = {0, 0.025, 0.05,0.075,   0.1,0.125,  0.15, 0.175, 0.2,0.225, 0.25,0.275, 0.3, 0.325, 0.35,0.375, 0.4,0.425, 0.45,0.475,  0.5, 0.525, 0.55,0.575, 0.6,0.625, 0.65, 0.675, 0.7,0.725,0.750,0.775,0.8,0.825 ,0.85,0.875,0.9, 0.925, 0.95, 0.975, 1.0, 1.05, 1.1, 1.15,  1.2 , 1.25 ,1.3, 1.35,1.4, 1.45,  1.5,1.55, 1.6, 1.65, 1.7, 1.75,1.8, 1.85, 1.9, 1.95,2.0, 2.1,2.2,2.3,2.4, 2.5}; 
     //std::vector<double> pzbins = {0.5,1.0,1.5,2,2.5,3, 3.5, 4, 4.5,5.0,6.0, 7.0, 8.0,9.0,10.0, 12.5, 15.0,17.5, 20.0};  // GeV
 
    /* std::vector<double> pzbins = {0.5,0.75, 1.0, 1.25, 1.5, 1.75, 2,2.25,2.5,2.75, 3, 3.25, 3.5, 3.75,  4, 4.25, 4.5,4.75, 5.0, 5.25, 
                                   5.5, 5.75, 6.0, 6.25, 6.5, 6.75, 7.0, 7.25, 7.5, 7.75, 8.0, 8.25, 8.5, 8.75, 9.0, 9.25, 9.5, 9.75,
                                   10.0, 10.25, 10.5, 10.75, 11, 11.25, 11.5, 11.75, 12.0, 12.25, 12.5, 12.75, 13, 13.25, 13.5, 13.75, 14.0, 
                                   15.0, 16.0, 17, 18.0, 19.0, 20.0};  // GeV*/
+
+
+    //std::vector<double> pzbins(100) ; // vector with 100 ints.
+    //std::iota (std::begin(v), std::end(v), 0); // Fill with 0, 1, ..., 99.
 
 
     std::vector<double> sumTpbins = {0,  0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
@@ -181,13 +218,14 @@ public:
 
     // this is just to appease NUISANCE, it is copied to make the tracked 'MC'
     // histogram
-    fDataHist = new TH1D("DUNE_3D_MINERvALike_data", "", f3DHist->GetNcells(),
-                         0, f3DHist->GetNcells());
+    //fDataHist = new TH1D("DUNE_3D_MINERvALike_data", "", f3DHist->GetNcells(),0, f3DHist->GetNcells());
+     fDataHist = new TH1D("DUNE_3D_MINERvALike_data", "", 1, 0, 1);
+
+
     // more boilerplate
     FinaliseSampleSettings();
-    fScaleFactor =
-        (GetEventHistogram()->Integral("width") * 1E-38 / (fNEvents + 0.)) /
-        this->TotalIntegratedFlux();
+     //fScaleFactor =((GetEventHistogram()->Integral("width") * 1E-38) / (fNEvents + 0.)) /this->TotalIntegratedFlux();
+    fScaleFactor =1.0;
     FinaliseMeasurement();
   };
 
@@ -422,6 +460,7 @@ public:
 
   void Write(std::string drawOpt) {
 
+    
     SplitWrite3D(f3DHist);
     SplitWrite3D(f3DHist_CCQE);
     SplitWrite3D(f3DHist_CC2p2h);
@@ -439,6 +478,8 @@ public:
     SplitWrite3D(f3DHist_EAvail_lowW);
     SplitWrite3D(f3DHist_EAvail_midW);
     SplitWrite3D(f3DHist_EAvail_highW);
+    
+
 
     // we have to tidy this up in this SO if we don't want horrible crashes on
     // program tear down
