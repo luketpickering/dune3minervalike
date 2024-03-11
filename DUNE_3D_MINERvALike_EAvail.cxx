@@ -612,6 +612,26 @@ public:
         proj->SetTitle(ss.str().c_str());
         proj->GetXaxis()->SetTitle("#Sigma T_{p} [GeV] or Available Energy ");
 
+        std::string hist_1Dname = proj->GetName();
+        std::ofstream outputFile1D(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/1Dbinerrors" + hist_1Dname + ".txt").c_str()); // create a new output file or overwrite an existing one
+       
+        outputFile1D << " Bin errors for 1D projection histogram " << proj->GetName() << "      \n" ;
+        int binsin1Dhist=proj->GetNbinsX();
+
+        if (outputFile1D.is_open()) { // check if the file was opened successfully
+          for(int n =0 ; n< binsin1Dhist ; n++){
+
+          double sqrt_bincontent1D = std::sqrt(proj->GetBinContent(n));
+          double standard_error_bincontent1D = 1.0/sqrt_bincontent1D;
+          outputFile1D << " Bin number " << proj->GetBin(n) << "  ";
+          outputFile1D << " Bin Content = " << proj->GetBinContent(n) << "  " ;
+          outputFile1D << " Sqrt Bin Content = " << sqrt_bincontent1D << "  " ;
+          outputFile1D << " Bin Error = " << proj->GetBinError(n) << "  ";
+          outputFile1D << " Standard error (1/sqrt(n)) = " << standard_error_bincontent1D << "      \n";
+          }
+        }
+
+
         //Get the bin errors
         /*
         std::cout << "Hist name = " << ptpzproj->GetName() <<std::endl;
@@ -628,10 +648,9 @@ public:
           outputFile << " Sqrt Bin Content = " << sqrt_bincontent << "  " ;
           outputFile << " Bin Error = " << ptpzproj->GetBinError(x + 1, y + 1) << "  ";
           outputFile << " Standard error (1/sqrt(n)) = " << standard_error_bincontent << "      \n";
-
         }
       
-
+        outputFile1D.close();
         proj->Write();
         proj->SetDirectory(nullptr);
         delete proj;
