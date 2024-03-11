@@ -34,6 +34,27 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other;
 
+  std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_double;  //pointers to the new histograms for the new EAvailable binning
+  std::unique_ptr<TH3D> f3DHist_EAvail_CCQE_pzbins_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC2p2h_pzbins_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi_pzbins_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS_pzbins_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_Other_pzbins_double;
+
+  std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_uniform; 
+  std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_uniform_double;  //pointers to the new histograms for the new EAvailable binning
+  std::unique_ptr<TH3D> f3DHist_EAvail_CCQE_pzbins_uniform;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC2p2h_pzbins_uniform;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi_pzbins_uniform;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS_pzbins_uniform;
+  std::unique_ptr<TH3D> f3DHist_EAvail_Other_pzbins_uniform;
+
+   std::unique_ptr<TH3D> f3DHist_EAvail_CCQE_pzbins_uniform_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC2p2h_pzbins_uniform_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi_pzbins_uniform_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS_pzbins_uniform_double;
+  std::unique_ptr<TH3D> f3DHist_EAvail_Other_pzbins_uniform_double;
+
   std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_midW;
   std::unique_ptr<TH3D> f3DHist_EAvail_highW;
@@ -43,7 +64,7 @@ public:
 //template <typename T>
   template <typename T>
     std::vector<T> linspace(T a, T b, size_t N) {
-        T h = (b - a) / static_cast<T>(N-1);
+        T h = (b - a) / static_cast<T>(N);
         std::vector<T> xs(N);
         typename std::vector<T>::iterator x;
         T val;
@@ -51,6 +72,15 @@ public:
             *x = val;
         return xs;
     }
+
+  void ExtendLinspace(std::vector<double> &in, double low, double high,size_t nbins){
+    for(auto x : linspace(low, high,nbins)){
+        in.push_back(x);
+        
+      }
+      auto x =std::unique(in.begin(),in.end());  //put duplicate bins at end
+      in.erase(x, in.end()); //erase duplicates
+  }
 
   //********************************************************************
   DUNE_3D_MINERvALike_EAvail(nuiskey samplekey){
@@ -69,75 +99,62 @@ public:
     fSettings.SetXTitle("p_{T} [GeV/#it{c}]");
     fSettings.SetYTitle("p_{z} [GeV/#it{c}]");
     fSettings.SetZTitle("#Sigma T_{prot} [GeV]");
-
-    
-
     // END boilerplate
 
     // 3D binning
+    std::vector<double> ptbins =linspace(0.0, 2.5,20) ;
 
-    std::vector<double> pzbins = linspace(0.5,20.0,399);
+    //std::vector<double> ptbins;
+    //ExtendLinspace(ptbins,1e-8,0.2,4);
+    //ExtendLinspace(ptbins,0.2,0.4,5);
+    //ExtendLinspace(ptbins,0.4,0.7,4);
+    //ExtendLinspace(ptbins,0.7,2.2,5);
+  
+    std::cout<<"pt vector is: "<<std::endl;
+    for(int i=0 ; i< 21 ; i++){
+        std::cout<< ptbins[i]<<std::endl;
 
-    std::vector<double> ptbins =linspace(0.0, 2.5,125) ;
+    }
 
+    std::vector<double> pzbins_uniform = linspace(1.0e-8,6.6,22); //linearly spaced bins
+    std::vector<double> pzbins_uniform_doublebins = linspace(1.0e-8,6.6,44); //linearly spaced bins
+    
+    std::vector<double> pzbins;
+    ExtendLinspace(pzbins,1e-8,1.5,5);
+    ExtendLinspace(pzbins,1.5,1.8,2);
+    ExtendLinspace(pzbins,1.8,2.3,5);
+    ExtendLinspace(pzbins,2.3,6.6,10);
+    
 
-    /*
-    std::vector<double> ptbins = {0,     0.075, 0.15, 0.25, 0.325, 0.4, 0.475, 0.55,  0.7,  0.85, 1.0,   2.5}; // GeV
-    std::vector<double> pzbins = {1.5, 3.5, 4.5, 7.0, 8.0, 10.0, 20.0};  // GeV
-    std::vector<double> sumTpbins = {0,    0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6,  0.8}; // GeV
-    std::vector<double> EAvail_bins = {0.04, 0.08}; // GeV
-    */
-   // std::vector<double> ptbins = {0.4, 0.475}; // GeV
+    std::vector<double> pzbins_double;
+    ExtendLinspace(pzbins_double,1e-8,1.5,10);
+    ExtendLinspace(pzbins_double,1.5,1.8,4);
+    ExtendLinspace(pzbins_double,1.8,2.3,10);
+    ExtendLinspace(pzbins_double,2.3,6.6,20);
+    
+    std::cout<<"pz vector is: "<<std::endl;
+    for(int i=0 ; i< pzbins.size(); i++){
+        std::cout<< pzbins[i]<<std::endl;
+    }
 
-   /*
-    std::vector<double> ptbins = {0.00, 0.02,0.04, 0.06,0.08, 
-                                  0.1, 0.12,0.14 ,0.16,0.18, 
-                                  0.2, 0.22,0.24,0.26, 0.28, 
-                                  0.3,0.32,0.34 ,0.36,0.38, 
-                                  0.4,0.42, 0.44, 0.46,0.48, 
-                                  0.5,0.52, 0.54, 0.56,0.58, 
-                                  0.6, 0.62, 0.64, 0.66,0.68, 
-                                  0.7,0.72, 0.74, 0.76,0.78, 
-                                  0.8,0.82, 0.84, 0.86,0.88, 
-                                  0.9,0.92, 0.94, 0.96,0.98, 
-                                  1.0, 1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,
-                                  2.0, 2.1,2.2,2.3,2.4,2.5, 2.6,2.7,2.8,2.9,
-                                }; // GeV */
-    //std::vector<double> pzbins = {1.5, 3.5};  // GeV
-    //std::vector<double> pzbins = {0.5,1.0,1.5,2,2.5,3, 3.5, 4, 4.5,5.0,6.0, 7.0, 8.0,9.0,10.0, 12.5, 15.0,17.5, 20.0};  // GeV
-    /*
-   std::vector<double> pzbins={0.5,  0.55 ,0.6 , 0.65 ,0.7 , 0.75, 0.8 , 0.85, 0.9 , 0.95, 1. ,  1.05 ,1.1,  1.15,
-                                1.2,  1.25 ,1.3 , 1.35 ,1.4 , 1.45, 1.5 , 1.55, 1.6 , 1.65, 1.7,  1.75 ,1.8,  1.85,
-                                1.9 , 1.95, 2.0,   2.05, 2.1 , 2.15, 2.2 , 2.25, 2.3 , 2.35, 2.4,  2.45, 2.5,  2.55,
-                                2.6  ,2.65, 2.7 , 2.75, 2.8 , 2.85, 2.9,  2.95, 3. ,  3.05, 3.1,  3.15, 3.2,  3.25,
-                                3.3 , 3.35, 3.4 , 3.45, 3.5 , 3.55, 3.6 , 3.65, 3.7 , 3.75, 3.8,  3.85, 3.9,  3.95,
-                                4.   ,4.05, 4.1 , 4.15, 4.2 , 4.25, 4.3,  4.35, 4.4 ,4.45, 4.5,  4.55, 4.6,  4.65,
-                                4.7 , 4.75, 4.8 , 4.85, 4.9 , 4.95, 5.0,   5.05, 5.1 , 5.15, 5.2,  5.25, 5.3,  5.35,
-                                5.4 , 5.45, 5.5 , 5.55, 5.6 , 5.65, 5.7,  5.75, 5.8 , 5.85, 5.9,  5.95, 6.0,   6.05,
-                                6.1 , 6.15, 6.2 , 6.25, 6.3 , 6.35, 6.4 , 6.45, 6.5,  6.55, 6.6,  6.65, 6.7, 6.75,
-                                6.8 , 6.85, 6.9 , 6.95, 7.  , 7.05, 7.1  ,7.15, 7.2,  7.25, 7.3,  7.35, 7.4,  7.45,
-                                7.5 , 7.55, 7.6 , 7.65, 7.7 , 7.75, 7.8 , 7.85, 7.9 , 7.95, 8.0,  8.05, 8.1,  8.15,
-                                8.2 , 8.25, 8.3 , 8.35, 8.4 , 8.45, 8.5 , 8.55, 8.6 , 8.65, 8.7,  8.75, 8.8,  8.85,
-                                8.9 , 8.95, 9.0,   9.05, 9.1,  9.15, 9.2,  9.25, 9.3 , 9.35, 9.4,  9.45, 9.5,  9.55,
-                                9.6 , 9.65, 9.7 , 9.75, 9.8 , 9.85 ,9.9  ,9.95,10, 10.2,
-                                10.4,10.6,10.8,12,12.2,12.4,12.6,12.8,13,14,15,16,17,18,19,20}; */
+    std::cout<<"pzbins= double is: "<<std::endl;
+    for(int i=0 ; i< pzbins_double.size() ; i++){
+        std::cout<< pzbins_double[i]<<std::endl;
 
-   // std::vector<double> ptbins = {0,  0.05,   0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,0.55,0.6,0.65 , 0.7,0.75,0.8 ,0.9, 1.0, 1.5,2.0,  2.5}; // GeV
-  //  std::vector<double> ptbins = {0, 0.025, 0.05,0.075,   0.1,0.125,  0.15, 0.175, 0.2,0.225, 0.25,0.275, 0.3, 0.325, 0.35,0.375, 0.4,0.425, 0.45,0.475,  0.5, 0.525, 0.55,0.575, 0.6,0.625, 0.65, 0.675, 0.7,0.725,0.750,0.775,0.8,0.825 ,0.85,0.875,0.9, 0.925, 0.95, 0.975, 1.0, 1.05, 1.1, 1.15,  1.2 , 1.25 ,1.3, 1.35,1.4, 1.45,  1.5,1.55, 1.6, 1.65, 1.7, 1.75,1.8, 1.85, 1.9, 1.95,2.0, 2.1,2.2,2.3,2.4, 2.5}; 
-    //std::vector<double> pzbins = {0.5,1.0,1.5,2,2.5,3, 3.5, 4, 4.5,5.0,6.0, 7.0, 8.0,9.0,10.0, 12.5, 15.0,17.5, 20.0};  // GeV
+    }
 
-   /* std::vector<double> pzbins = {0.5,0.75, 1.0, 1.25, 1.5, 1.75, 2,2.25,2.5,2.75, 3, 3.25, 3.5, 3.75,  4, 4.25, 4.5,4.75, 5.0, 5.25, 
-                                  5.5, 5.75, 6.0, 6.25, 6.5, 6.75, 7.0, 7.25, 7.5, 7.75, 8.0, 8.25, 8.5, 8.75, 9.0, 9.25, 9.5, 9.75,
-                                  10.0, 10.25, 10.5, 10.75, 11, 11.25, 11.5, 11.75, 12.0, 12.25, 12.5, 12.75, 13, 13.25, 13.5, 13.75, 14.0, 
-                                  15.0, 16.0, 17, 18.0, 19.0, 20.0};  // GeV*/
+    std::cout<<"pzbins_uniform is: "<<std::endl;
+    for(int i=0 ; i<pzbins_uniform.size() ; i++){
+        std::cout<< pzbins_uniform[i]<<std::endl;
+    }
 
-
-    //std::vector<double> pzbins(100) ; // vector with 100 ints.
-    //std::iota (std::begin(v), std::end(v), 0); // Fill with 0, 1, ..., 99.
-
-
-    std::vector<double> sumTpbins = {0,  0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
-    std::vector<double> EAvail_bins = {0, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
+    std::cout<<"pzbins_uniform double is: "<<std::endl;
+    for(int i=0 ; i< pzbins_uniform_doublebins.size() ; i++){
+        std::cout<< pzbins_uniform_doublebins[i]<<std::endl;
+    }
+    
+    std::vector<double> sumTpbins = {1e-8,  0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
+    std::vector<double> EAvail_bins = {1e-8, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
 
     // This histogram is just used to help with the binning, we could manually
     // write the bin-mapping function ourselves
@@ -150,6 +167,23 @@ public:
     f3DHist_EAvail =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail", "", ptbins.size() - 1,
                                ptbins.data(), pzbins.size() - 1, pzbins.data(),
+                               EAvail_bins.size() - 1, EAvail_bins.data());
+
+
+    f3DHist_EAvail_pzbins_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_double", "", ptbins.size() - 1,
+                               ptbins.data(), pzbins_double.size() - 1, pzbins_double.data(),
+                               EAvail_bins.size() - 1, EAvail_bins.data());
+
+
+    f3DHist_EAvail_pzbins_uniform =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_uniform", "", ptbins.size() - 1,
+                               ptbins.data(), pzbins_uniform.size() - 1, pzbins_uniform.data(),
+                               EAvail_bins.size() - 1, EAvail_bins.data());
+
+    f3DHist_EAvail_pzbins_uniform_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_uniform_double", "", ptbins.size() - 1,
+                               ptbins.data(), pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(),
                                EAvail_bins.size() - 1, EAvail_bins.data());
 
     f3DHist_CCQE = std::make_unique<TH3D>(
@@ -199,6 +233,84 @@ public:
         "DUNE_3D_MINERvALike_EAvail_Other", "", ptbins.size() - 1, ptbins.data(),
         pzbins.size() - 1, pzbins.data(), EAvail_bins.size() - 1,
         EAvail_bins.data());
+
+
+    //uniform binning
+    f3DHist_EAvail_CCQE_pzbins_uniform =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CCQE_pzbins_uniform", "",ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform.size() - 1, pzbins_uniform.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
+    f3DHist_EAvail_CC2p2h_pzbins_uniform =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC2p2h_pzbins_uniform", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform.size() - 1, pzbins_uniform.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
+    f3DHist_EAvail_CC1p1pi_pzbins_uniform =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC1p1pi_pzbins_uniform", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform.size() - 1, pzbins_uniform.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    
+    f3DHist_EAvail_CCDIS_pzbins_uniform = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_CCDI_pzbins_uniformS", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform.size() - 1, pzbins_uniform.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    f3DHist_EAvail_Other_pzbins_uniform = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_Other_pzbins_uniform", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform.size() - 1, pzbins_uniform.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
+    //double uniform binning
+    //uniform_double binning
+    f3DHist_EAvail_CCQE_pzbins_uniform_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CCQE_pzbins_uniform_double", "",ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
+    f3DHist_EAvail_CC2p2h_pzbins_uniform_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC2p2h_pzbins_uniform_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
+    f3DHist_EAvail_CC1p1pi_pzbins_uniform_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC1p1pi_pzbins_uniform_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    
+    f3DHist_EAvail_CCDIS_pzbins_uniform_double = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_CCDI_pzbins_uniform_doubleS", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    f3DHist_EAvail_Other_pzbins_uniform_double = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_Other_pzbins_uniform_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
+    //double binning  over peak
+    f3DHist_EAvail_CCQE_pzbins_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CCQE_pzbins_double", "",ptbins.size() - 1, ptbins.data(),
+        pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
+    f3DHist_EAvail_CC2p2h_pzbins_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC2p2h_pzbins_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
+    f3DHist_EAvail_CC1p1pi_pzbins_double =
+        std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC1p1pi_pzbins_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    
+    f3DHist_EAvail_CCDIS_pzbins_double = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_CCDI_pzbins_doubleS", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+    f3DHist_EAvail_Other_pzbins_double = std::make_unique<TH3D>(
+        "DUNE_3D_MINERvALike_EAvail_Other_pzbins_double", "", ptbins.size() - 1, ptbins.data(),
+        pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
+        EAvail_bins.data());
+
 
     // Now the invariant mass histograms for available energy
     f3DHist_EAvail_lowW =
@@ -357,6 +469,16 @@ public:
     f3DHist_EAvail->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                          d3dml_bx->E_Avail, weight);
 
+    f3DHist_EAvail_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                         d3dml_bx->E_Avail, weight);
+
+    f3DHist_EAvail_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                         d3dml_bx->E_Avail, weight);
+
+
+    f3DHist_EAvail_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                         d3dml_bx->E_Avail, weight);
+
     int amode = std::abs(d3dml_bx->mode);
     double W = std::abs(d3dml_bx->W);
 
@@ -365,11 +487,31 @@ public:
                          d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CCQE_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CCQE_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CCQE_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+      
     } else if (amode == InputHandler::kCC2p2h) {
       f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                            d3dml_bx->sum_TProt, weight);
+
       f3DHist_EAvail_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_CC2p2h_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+       f3DHist_EAvail_CC2p2h_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CC2p2h_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      
     } else if ((amode == InputHandler::kCC1piponp) ||
                (amode == InputHandler::kCC1pi0onn) ||
                (amode == InputHandler::kCC1piponn)) {
@@ -377,16 +519,41 @@ public:
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CC1p1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CC1p1pi_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+       f3DHist_EAvail_CC1p1pi_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CC1p1pi_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
     } else if ((amode == InputHandler::kCCmultipi) ||
                (amode == InputHandler::kCCDIS)) {
       f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_CCDIS_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_CCDIS_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_CCDIS_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+
+
     } else {
       f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
       f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_Other_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_Other_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      d3dml_bx->E_Avail, weight);
+      f3DHist_EAvail_Other_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
       d3dml_bx->E_Avail, weight);
     }
 
@@ -418,8 +585,10 @@ public:
     h->SetDirectory(nullptr);
 
     
-    auto ptpzproj = std::unique_ptr<TH2>(static_cast<TH2*>(h->Project3D("xy")));
-    
+    auto ptpzproj = std::unique_ptr<TH2>(static_cast<TH2*>(h->Project3D("yx")));
+    std::string hist_2Dname = ptpzproj->GetName();
+    std::ofstream outputFile(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/2Dbinerrors" + hist_2Dname + ".txt").c_str()); // create a new output file or overwrite an existing one
+    outputFile << " Bin errors for 2D projection histogram " << ptpzproj->GetName() << "      \n" ;
 
       for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
         for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
@@ -436,22 +605,40 @@ public:
            << h->GetYaxis()->GetBinLowEdge(y + 1) << " < p_z < "
            << h->GetYaxis()->GetBinUpEdge(y + 1) << " [GeV/c]";
 
-        double proj_cell_area = (h->GetXaxis()->GetBinUpEdge(x + 1) -
-                                 h->GetXaxis()->GetBinLowEdge(x + 1)) *
-                                (h->GetYaxis()->GetBinUpEdge(y + 1) -
-                                 h->GetYaxis()->GetBinLowEdge(y + 1));
+        double proj_cell_area = (h->GetXaxis()->GetBinUpEdge(x + 1) - h->GetXaxis()->GetBinLowEdge(x + 1)) *
+                                (h->GetYaxis()->GetBinUpEdge(y + 1) - h->GetYaxis()->GetBinLowEdge(y + 1));
 
         proj->Scale(fScaleFactor / proj_cell_area, "WIDTH");
-        ptpzproj->SetBinContent(x+1,y+1, ptpzproj->GetBinContent(x+1,y+1)/proj_cell_area); //divide by the x, y bin widths 
         proj->SetTitle(ss.str().c_str());
         proj->GetXaxis()->SetTitle("#Sigma T_{p} [GeV] or Available Energy ");
+
+        //Get the bin errors
+        /*
+        std::cout << "Hist name = " << ptpzproj->GetName() <<std::endl;
+        
+        std::cout << " Bin Content = " << ptpzproj->GetBinContent(x + 1, y + 1)<<std::endl;
+        std::cout << "S qrt Bin Content = " << sqrt_bincontent << std::endl;
+        std::cout << "Bin Error = " << ptpzproj->GetBinError(x + 1, y + 1)<<std::endl;
+        */
+        double sqrt_bincontent = std::sqrt(ptpzproj->GetBinContent(x + 1, y + 1));
+        double standard_error_bincontent = 1.0/sqrt_bincontent;
+        if (outputFile.is_open()) { // check if the file was opened successfully
+          outputFile << " Bin number " << ptpzproj->GetBin(x + 1, y + 1) << "  ";
+          outputFile << " Bin Content = " << ptpzproj->GetBinContent(x + 1, y + 1) << "  " ;
+          outputFile << " Sqrt Bin Content = " << sqrt_bincontent << "  " ;
+          outputFile << " Bin Error = " << ptpzproj->GetBinError(x + 1, y + 1) << "  ";
+          outputFile << " Standard error (1/sqrt(n)) = " << standard_error_bincontent << "      \n";
+
+        }
+      
 
         proj->Write();
         proj->SetDirectory(nullptr);
         delete proj;
       }
     }
-
+    outputFile.close(); // close the file when done
+    ptpzproj->Scale(fScaleFactor,"WIDTH");  //get  root to divide out the bin width
     ptpzproj->Write();
     //make sure to tell ROOT that it doesn't own this histogram so that we can delete it
     ptpzproj->SetDirectory(nullptr);
@@ -474,6 +661,30 @@ public:
     SplitWrite3D(f3DHist_EAvail_CC1p1pi);
     SplitWrite3D(f3DHist_EAvail_CCDIS);
     SplitWrite3D(f3DHist_EAvail_Other);
+
+
+    //SplitWrite3D(f3DHist_EAvail_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_pzbins_uniform);
+    SplitWrite3D(f3DHist_EAvail_pzbins_uniform_double);
+    SplitWrite3D(f3DHist_EAvail_CCQE_pzbins_uniform);
+    SplitWrite3D(f3DHist_EAvail_CC2p2h_pzbins_uniform);
+    SplitWrite3D(f3DHist_EAvail_CC1p1pi_pzbins_uniform);
+    SplitWrite3D(f3DHist_EAvail_CCDIS_pzbins_uniform);
+    SplitWrite3D(f3DHist_EAvail_Other_pzbins_uniform);
+
+
+    SplitWrite3D(f3DHist_EAvail_CCQE_pzbins_uniform_double);
+    SplitWrite3D(f3DHist_EAvail_CC2p2h_pzbins_uniform_double);
+    SplitWrite3D(f3DHist_EAvail_CC1p1pi_pzbins_uniform_double);
+    SplitWrite3D(f3DHist_EAvail_CCDIS_pzbins_uniform_double);
+    SplitWrite3D(f3DHist_EAvail_Other_pzbins_uniform_double);
+
+    SplitWrite3D(f3DHist_EAvail_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_CCQE_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_CC2p2h_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_CC1p1pi_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_CCDIS_pzbins_double);
+    SplitWrite3D(f3DHist_EAvail_Other_pzbins_double);
 
     SplitWrite3D(f3DHist_EAvail_lowW);
     SplitWrite3D(f3DHist_EAvail_midW);
@@ -504,6 +715,30 @@ public:
     f3DHist_EAvail_CC1p1pi->Reset();
     f3DHist_EAvail_CCDIS->Reset();
     f3DHist_EAvail_Other->Reset();
+
+    f3DHist_EAvail_pzbins_uniform->Reset();
+    f3DHist_EAvail_CCQE_pzbins_uniform->Reset();
+    f3DHist_EAvail_CC2p2h_pzbins_uniform->Reset();
+    f3DHist_EAvail_CC1p1pi_pzbins_uniform->Reset();
+    f3DHist_EAvail_CCDIS_pzbins_uniform->Reset();
+    f3DHist_EAvail_Other_pzbins_uniform->Reset();
+
+    f3DHist_EAvail_pzbins_uniform_double->Reset();
+    f3DHist_EAvail_CCQE_pzbins_uniform_double->Reset();
+    f3DHist_EAvail_CC2p2h_pzbins_uniform_double->Reset();
+    f3DHist_EAvail_CC1p1pi_pzbins_uniform_double->Reset();
+    f3DHist_EAvail_CCDIS_pzbins_uniform_double->Reset();
+    f3DHist_EAvail_Other_pzbins_uniform_double->Reset();
+
+    f3DHist_EAvail_pzbins_uniform_double->Reset();
+    
+
+    f3DHist_EAvail_pzbins_double->Reset();
+    f3DHist_EAvail_CCQE_pzbins_double->Reset();
+    f3DHist_EAvail_CC2p2h_pzbins_double->Reset();
+    f3DHist_EAvail_CC1p1pi_pzbins_double->Reset();
+    f3DHist_EAvail_CCDIS_pzbins_double->Reset();
+    f3DHist_EAvail_Other_pzbins_double->Reset();
 
     f3DHist_EAvail_lowW->Reset();
     f3DHist_EAvail_midW->Reset();
