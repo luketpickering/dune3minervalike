@@ -154,8 +154,10 @@ public:
     }
     
     std::vector<double> sumTpbins = {1e-8,  0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
-    std::vector<double> EAvail_bins = {1e-8, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
-
+    //std::vector<double> EAvail_bins = {1e-8, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
+    //std::vector<double> EAvail_bins = linspace(1.0e-8,0.8,2); 
+    std::vector<double> EAvail_bins = {1e-8,0.4,0.8};
+    
     // This histogram is just used to help with the binning, we could manually
     // write the bin-mapping function ourselves
     f3DHist =
@@ -374,6 +376,9 @@ public:
 
     //// Get Enu Rec
     double enu_rec = emu + q0;
+    if(enu_rec < 8.0){
+      d3dml_bx->E_nu =enu_rec;
+    }
 
     // Set Q2 QE
     double q2qe = 2 * enu_rec * (emu - pmu * cos(thmu)) - mmu * mmu;
@@ -400,6 +405,7 @@ public:
 
     static const double toGeV = 1E-3;
 
+    
     d3dml_bx->p_para = Pmu.Vect().Dot(nudir) * toGeV;
     d3dml_bx->p_perp = Pmu.Vect().Cross(nudir).Mag() * toGeV;
 
@@ -423,7 +429,7 @@ public:
 
   struct D3DMLBox : public MeasurementVariableBox1D {
     D3DMLBox()
-        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0}, W{0} {}
+        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0}, W{0},  E_nu{0} {}
 
     MeasurementVariableBox *CloneSignalBox() {
       auto cl = new D3DMLBox();
@@ -435,6 +441,7 @@ public:
       cl->sum_TProt = sum_TProt;
       cl->E_Avail = E_Avail;
       cl->W = W;
+      cl->E_nu = E_nu;
       return cl;
     }
 
@@ -446,6 +453,7 @@ public:
       sum_TProt = 0;
       E_Avail = 0;
       W = 0;
+      E_nu = 0;
     }
 
     int mode;
@@ -454,6 +462,7 @@ public:
     double sum_TProt;
     double E_Avail;
     double W;
+    double E_nu;
   };
   
   MeasurementVariableBox *CreateBox() { return new D3DMLBox(); };
@@ -584,19 +593,25 @@ public:
     h->Write();
     h->SetDirectory(nullptr);
 
-    
+    std::ofstream outputFile1DALL("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/all1Dbinerrors.txt"); // create a new output file or overwrite an existing one
+       
     auto ptpzproj = std::unique_ptr<TH2>(static_cast<TH2*>(h->Project3D("yx")));
     std::string hist_2Dname = ptpzproj->GetName();
     std::ofstream outputFile(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/2Dbinerrors" + hist_2Dname + ".txt").c_str()); // create a new output file or overwrite an existing one
     outputFile << " Bin errors for 2D projection histogram " << ptpzproj->GetName() << "      \n" ;
 
+      int number_of_pt_bins = h->GetXaxis()->GetNbins();
+      int number_of_pz_bins = h->GetYaxis()->GetNbins();
+      int number_of_EAvail_bins = h->GetZaxis()->GetNbins();
+
+      std::cout << "The 3D histogram " << h->GetName() << "has" << number_of_pt_bins << "bins in pt (x axis) and " << number_of_pz_bins << "Pz bins" <<"and" << h->GetZaxis()->GetNbins()<< "energy bins"<<std::endl;
       for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
         for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
           TH1 *proj =
               h->ProjectionZ((std::string(h->GetName()) + "_x" +
                               std::to_string(x) + "_y" + std::to_string(y))
                                 .c_str(),
-                            x + 1, x + 1, y + 1, y + 1, "e");
+                                x+1, x+1 , y+1 , y+1 , "e");
     
 
         std::stringstream ss;
@@ -608,38 +623,56 @@ public:
         double proj_cell_area = (h->GetXaxis()->GetBinUpEdge(x + 1) - h->GetXaxis()->GetBinLowEdge(x + 1)) *
                                 (h->GetYaxis()->GetBinUpEdge(y + 1) - h->GetYaxis()->GetBinLowEdge(y + 1));
 
-        proj->Scale(fScaleFactor / proj_cell_area, "WIDTH");
+        
+        double x_bin_width_pt = h->GetXaxis()->GetBinUpEdge(x + 1) - h->GetXaxis()->GetBinLowEdge(x + 1);
+        double y_bin_width_pz = h->GetYaxis()->GetBinUpEdge(y + 1) - h->GetYaxis()->GetBinLowEdge(y + 1);
+      
+        proj->Scale(1.0); 
+       // proj->Scale(1.0/proj_cell_area,"WIDTH"); 
+        //proj->Scale(fScaleFactor/proj_cell_area,"WIDTH"); 
+       // proj->Scale(proj_cell_area/fScaleFactor , "WIDTH"); //, "WIDTH"    fScaleFactor /
+        //std::cout<< "proj_cell_area  =  " << proj_cell_area  <<std::endl;
         proj->SetTitle(ss.str().c_str());
         proj->GetXaxis()->SetTitle("#Sigma T_{p} [GeV] or Available Energy ");
 
         std::string hist_1Dname = proj->GetName();
         std::ofstream outputFile1D(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/1Dbinerrors" + hist_1Dname + ".txt").c_str()); // create a new output file or overwrite an existing one
-       
+        
         outputFile1D << " Bin errors for 1D projection histogram " << proj->GetName() << "      \n" ;
         int binsin1Dhist=proj->GetNbinsX();
 
         if (outputFile1D.is_open()) { // check if the file was opened successfully
-          for(int n =0 ; n< binsin1Dhist ; n++){
+          for(int n =1 ; n< binsin1Dhist+1 ; n++){
 
           double sqrt_bincontent1D = std::sqrt(proj->GetBinContent(n));
           double standard_error_bincontent1D = 1.0/sqrt_bincontent1D;
-          outputFile1D << " Bin number " << proj->GetBin(n) << "  ";
-          outputFile1D << " Bin Content = " << proj->GetBinContent(n) << "  " ;
-          outputFile1D << " Sqrt Bin Content = " << sqrt_bincontent1D << "  " ;
-          outputFile1D << " Bin Error = " << proj->GetBinError(n) << "  ";
-          outputFile1D << " Standard error (1/sqrt(n)) = " << standard_error_bincontent1D << "      \n";
+          outputFile1D << "Hist_name " << proj->GetName()  << "  "  << " Histogram_noofbins " << binsin1Dhist << "  \n";
+          outputFile1D << "Hist_binwidth_x" << proj->GetXaxis()->GetBinWidth(n)<< "  ";
+          //outputFile1D << "Histogram_binwidth_y" << proj->GetYaxis()->GetBinWidth(n)<< "  ";
+          outputFile1D << "Bin_number " << proj->GetBin(n) << "  ";
+          outputFile1D << "proj_cell_area " << proj_cell_area << "  ";
+          outputFile1D << "x_bin_width_pt " << x_bin_width_pt << "  ";
+          outputFile1D << "y_bin_width_pz " << y_bin_width_pz << "  ";
+
+          outputFile1D << "Bin_Content " << proj->GetBinContent(n) << "  " ;
+          outputFile1D << "Sqrt_Bin_Content " << sqrt_bincontent1D << "  " ;
+          outputFile1D << "Bin_Error_ROOT " << proj->GetBinError(n) << "  \n ";
+          
+
+          outputFile1DALL << "Histogram_name " << proj->GetName() << "  "  << " Histogram_noofbins " << binsin1Dhist << "  \n";
+          outputFile1DALL << "Histogram_binwidth " <<proj->GetXaxis()->GetBinWidth(n)<< "  ";
+          outputFile1DALL << "Bin_number " << proj->GetBin(n) << "  ";
+          outputFile1DALL << "proj_cell_area " << proj_cell_area << "  ";
+          outputFile1DALL << "x_bin_edge " << x_bin_width_pt << "  ";
+          outputFile1DALL << "y_bin_edge " << y_bin_width_pz << "  ";
+
+          outputFile1DALL << "Bin_Content " << proj->GetBinContent(n) << "  " ;
+          outputFile1DALL << "Sqrt_Bin_Content " << sqrt_bincontent1D << "  " ;
+          outputFile1DALL << "Bin_Error_ROOT " << proj->GetBinError(n) << "  \n";
+         
+
           }
         }
-
-
-        //Get the bin errors
-        /*
-        std::cout << "Hist name = " << ptpzproj->GetName() <<std::endl;
-        
-        std::cout << " Bin Content = " << ptpzproj->GetBinContent(x + 1, y + 1)<<std::endl;
-        std::cout << "S qrt Bin Content = " << sqrt_bincontent << std::endl;
-        std::cout << "Bin Error = " << ptpzproj->GetBinError(x + 1, y + 1)<<std::endl;
-        */
         double sqrt_bincontent = std::sqrt(ptpzproj->GetBinContent(x + 1, y + 1));
         double standard_error_bincontent = 1.0/sqrt_bincontent;
         if (outputFile.is_open()) { // check if the file was opened successfully
@@ -657,6 +690,7 @@ public:
       }
     }
     outputFile.close(); // close the file when done
+    outputFile1DALL.close();
     ptpzproj->Scale(fScaleFactor,"WIDTH");  //get  root to divide out the bin width
     ptpzproj->Write();
     //make sure to tell ROOT that it doesn't own this histogram so that we can delete it
