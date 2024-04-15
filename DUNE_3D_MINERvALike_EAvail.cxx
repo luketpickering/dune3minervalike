@@ -20,6 +20,7 @@ using namespace std;
 class DUNE_3D_MINERvALike_EAvail: public Measurement1D {
 public:
   std::unique_ptr<TH3D> f3DHist;
+  std::unique_ptr<TH1D> f1DHist_EAvail_true_nuenergy;
 
   std::unique_ptr<TH3D> f3DHist_CCQE;
   std::unique_ptr<TH3D> f3DHist_CC2p2h;
@@ -34,6 +35,15 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other;
 
+
+  std::unique_ptr<TH2D> f2DHist_EAvail;  //pointers to the new histograms for the new EAvailable binning
+  std::unique_ptr<TH2D> f2DHist_EAvail_CCQE;
+  std::unique_ptr<TH2D> f2DHist_EAvail_CC2p2h;
+  std::unique_ptr<TH2D> f2DHist_EAvail_CC1p1pi;
+  std::unique_ptr<TH2D> f2DHist_EAvail_CCDIS;
+  std::unique_ptr<TH2D> f2DHist_EAvail_Other;
+
+  
   std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_double;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_CCQE_pzbins_double;
   std::unique_ptr<TH3D> f3DHist_EAvail_CC2p2h_pzbins_double;
@@ -41,6 +51,7 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS_pzbins_double;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other_pzbins_double;
 
+  /*
   std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_uniform; 
   std::unique_ptr<TH3D> f3DHist_EAvail_pzbins_uniform_double;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_CCQE_pzbins_uniform;
@@ -54,7 +65,7 @@ public:
   std::unique_ptr<TH3D> f3DHist_EAvail_CC1p1pi_pzbins_uniform_double;
   std::unique_ptr<TH3D> f3DHist_EAvail_CCDIS_pzbins_uniform_double;
   std::unique_ptr<TH3D> f3DHist_EAvail_Other_pzbins_uniform_double;
-
+  */
   std::unique_ptr<TH3D> f3DHist_EAvail_lowW;  //pointers to the new histograms for the new EAvailable binning
   std::unique_ptr<TH3D> f3DHist_EAvail_midW;
   std::unique_ptr<TH3D> f3DHist_EAvail_highW;
@@ -102,13 +113,13 @@ public:
     // END boilerplate
 
     // 3D binning
-    std::vector<double> ptbins =linspace(0.0, 2.5,20) ;
+    //std::vector<double> ptbins =linspace(0.0, 2.5,20) ;
 
-    //std::vector<double> ptbins;
-    //ExtendLinspace(ptbins,1e-8,0.2,4);
-    //ExtendLinspace(ptbins,0.2,0.4,5);
-    //ExtendLinspace(ptbins,0.4,0.7,4);
-    //ExtendLinspace(ptbins,0.7,2.2,5);
+    std::vector<double> ptbins;
+    ExtendLinspace(ptbins,1e-8,0.2,4);
+    ExtendLinspace(ptbins,0.2,0.4,5);
+    ExtendLinspace(ptbins,0.4,0.7,4);
+    ExtendLinspace(ptbins,0.7,2.2,5);
   
     std::cout<<"pt vector is: "<<std::endl;
     for(int i=0 ; i< 21 ; i++){
@@ -122,14 +133,14 @@ public:
     std::vector<double> pzbins;
     ExtendLinspace(pzbins,1e-8,1.5,5);
     ExtendLinspace(pzbins,1.5,1.8,2);
-    ExtendLinspace(pzbins,1.8,2.3,5);
+    ExtendLinspace(pzbins,1.8,2.3,7);
     ExtendLinspace(pzbins,2.3,6.6,10);
     
 
     std::vector<double> pzbins_double;
     ExtendLinspace(pzbins_double,1e-8,1.5,10);
     ExtendLinspace(pzbins_double,1.5,1.8,4);
-    ExtendLinspace(pzbins_double,1.8,2.3,10);
+    ExtendLinspace(pzbins_double,1.8,2.3,14);
     ExtendLinspace(pzbins_double,2.3,6.6,20);
     
     std::cout<<"pz vector is: "<<std::endl;
@@ -143,20 +154,20 @@ public:
 
     }
 
+   
     std::cout<<"pzbins_uniform is: "<<std::endl;
     for(int i=0 ; i<pzbins_uniform.size() ; i++){
         std::cout<< pzbins_uniform[i]<<std::endl;
     }
-
+     /*
     std::cout<<"pzbins_uniform double is: "<<std::endl;
     for(int i=0 ; i< pzbins_uniform_doublebins.size() ; i++){
         std::cout<< pzbins_uniform_doublebins[i]<<std::endl;
     }
+    */
     
     std::vector<double> sumTpbins = {1e-8,  0.02, 0.04, 0.08, 0.12, 0.16, 0.24, 0.32, 0.4,  0.6}; // GeV
-    //std::vector<double> EAvail_bins = {1e-8, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
-    //std::vector<double> EAvail_bins = linspace(1.0e-8,0.8,2); 
-    std::vector<double> EAvail_bins = {1e-8,0.4,0.8};
+    std::vector<double> EAvail_bins = {1e-8, 0.01,   0.02, 0.04,0.06,  0.08,0.1, 0.12,0.14, 0.16, 0.2, 0.24, 0.28, 0.32, 0.4, 0.5, 0.6,0.8}; // GeV
     
     // This histogram is just used to help with the binning, we could manually
     // write the bin-mapping function ourselves
@@ -171,13 +182,14 @@ public:
                                ptbins.data(), pzbins.size() - 1, pzbins.data(),
                                EAvail_bins.size() - 1, EAvail_bins.data());
 
+    
 
     f3DHist_EAvail_pzbins_double =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_double", "", ptbins.size() - 1,
                                ptbins.data(), pzbins_double.size() - 1, pzbins_double.data(),
                                EAvail_bins.size() - 1, EAvail_bins.data());
 
-
+    /*
     f3DHist_EAvail_pzbins_uniform =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_uniform", "", ptbins.size() - 1,
                                ptbins.data(), pzbins_uniform.size() - 1, pzbins_uniform.data(),
@@ -187,6 +199,8 @@ public:
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_pzbins_uniform_double", "", ptbins.size() - 1,
                                ptbins.data(), pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(),
                                EAvail_bins.size() - 1, EAvail_bins.data());
+    
+    */
 
     f3DHist_CCQE = std::make_unique<TH3D>(
         "DUNE_3D_MINERvALike_CCQE", "", ptbins.size() - 1, ptbins.data(),
@@ -237,6 +251,7 @@ public:
         EAvail_bins.data());
 
 
+    /*
     //uniform binning
     f3DHist_EAvail_CCQE_pzbins_uniform =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CCQE_pzbins_uniform", "",ptbins.size() - 1, ptbins.data(),
@@ -287,12 +302,20 @@ public:
         "DUNE_3D_MINERvALike_EAvail_Other_pzbins_uniform_double", "", ptbins.size() - 1, ptbins.data(),
         pzbins_uniform_doublebins.size() - 1, pzbins_uniform_doublebins.data(), EAvail_bins.size() - 1,
         EAvail_bins.data());
+        */
+
+    //1D hist of Enu_true
+    f1DHist_EAvail_true_nuenergy =
+        std::make_unique<TH1D>("DUNE_3D_MINERvALike__EAvail_true_nuenergy", "", EAvail_bins.size() - 1,
+        EAvail_bins.data()) ;
+
 
     //double binning  over peak
     f3DHist_EAvail_CCQE_pzbins_double =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CCQE_pzbins_double", "",ptbins.size() - 1, ptbins.data(),
         pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
         EAvail_bins.data()) ;
+
 
     f3DHist_EAvail_CC2p2h_pzbins_double =
         std::make_unique<TH3D>("DUNE_3D_MINERvALike_EAvail_CC2p2h_pzbins_double", "", ptbins.size() - 1, ptbins.data(),
@@ -312,7 +335,7 @@ public:
         "DUNE_3D_MINERvALike_EAvail_Other_pzbins_double", "", ptbins.size() - 1, ptbins.data(),
         pzbins_double.size() - 1, pzbins_double.data(), EAvail_bins.size() - 1,
         EAvail_bins.data());
-
+      
 
     // Now the invariant mass histograms for available energy
     f3DHist_EAvail_lowW =
@@ -374,11 +397,14 @@ public:
     double emu  = muon->fP.E() / 1.E3;
     double mmu  = muon->fP.Mag() / 1.E3;
 
+
+    double neutrino_energy = (neutrino->fP.E())/1.E3;
+    double E_nu =neutrino_energy;
+    d3dml_bx->E_nu =neutrino_energy;
+    f1DHist_EAvail_true_nuenergy->Fill(neutrino_energy);
+
     //// Get Enu Rec
     double enu_rec = emu + q0;
-    if(enu_rec < 8.0){
-      d3dml_bx->E_nu =enu_rec;
-    }
 
     // Set Q2 QE
     double q2qe = 2 * enu_rec * (emu - pmu * cos(thmu)) - mmu * mmu;
@@ -429,7 +455,7 @@ public:
 
   struct D3DMLBox : public MeasurementVariableBox1D {
     D3DMLBox()
-        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0}, W{0},  E_nu{0} {}
+        : MeasurementVariableBox1D(), mode{0},p_para{0}, p_perp{0}, sum_TProt{0}, E_Avail{0}, W{0}, E_nu{0} {}
 
     MeasurementVariableBox *CloneSignalBox() {
       auto cl = new D3DMLBox();
@@ -466,122 +492,141 @@ public:
   };
   
   MeasurementVariableBox *CreateBox() { return new D3DMLBox(); };
-
+  int lowenergy_nu = 0;
+  int highenergy_nu = 0;
   void FillExtraHistograms(MeasurementVariableBox *vars, double weight) {
-    Measurement1D::FillExtraHistograms(vars, weight);
-
-    auto d3dml_bx = dynamic_cast<D3DMLBox *>(vars);
-
-    f3DHist->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->sum_TProt, weight);
     
-    f3DHist_EAvail->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->E_Avail, weight);
+    Measurement1D::FillExtraHistograms(vars, weight);
+    
+    auto d3dml_bx = dynamic_cast<D3DMLBox *>(vars);
+    if(d3dml_bx->E_nu < 8.0){
+      lowenergy_nu=lowenergy_nu+1;
 
-    f3DHist_EAvail_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->E_Avail, weight);
-
-    f3DHist_EAvail_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->E_Avail, weight);
-
-
-    f3DHist_EAvail_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->E_Avail, weight);
-
-    int amode = std::abs(d3dml_bx->mode);
-    double W = std::abs(d3dml_bx->W);
-
-    if (amode == InputHandler::kCCQE) {
-      f3DHist_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                         d3dml_bx->sum_TProt, weight);
-      f3DHist_EAvail_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-
-      f3DHist_EAvail_CCQE_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-
-      f3DHist_EAvail_CCQE_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-
-      f3DHist_EAvail_CCQE_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+      //std::cout<< "Reco neutrino energy is ok:  "<< d3dml_bx->E_nu <<std::endl;
+      f3DHist->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,d3dml_bx->sum_TProt, weight);
       
-    } else if (amode == InputHandler::kCC2p2h) {
-      f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                           d3dml_bx->sum_TProt, weight);
-
-      f3DHist_EAvail_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_CC2p2h_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-       f3DHist_EAvail_CC2p2h_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-
-      f3DHist_EAvail_CC2p2h_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-
+      f3DHist_EAvail->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->E_Avail, weight);
       
-    } else if ((amode == InputHandler::kCC1piponp) ||
-               (amode == InputHandler::kCC1pi0onn) ||
-               (amode == InputHandler::kCC1piponn)) {
-      f3DHist_CC1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+      f3DHist_EAvail_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                                         d3dml_bx->E_Avail, weight);
+
+      /*
+      f3DHist_EAvail_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->E_Avail, weight);
+
+      f3DHist_EAvail_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                          d3dml_bx->E_Avail, weight);
+      */
+      int amode = std::abs(d3dml_bx->mode);
+      double W = std::abs(d3dml_bx->W);
+
+      if (amode == InputHandler::kCCQE) {
+        f3DHist_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
                           d3dml_bx->sum_TProt, weight);
-      f3DHist_EAvail_CC1p1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CCQE->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CCQE_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        /*
+        f3DHist_EAvail_CCQE_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
 
-      f3DHist_EAvail_CC1p1pi_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CCQE_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        */
+        
+      } else if (amode == InputHandler::kCC2p2h) {
+        f3DHist_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                            d3dml_bx->sum_TProt, weight);
 
-       f3DHist_EAvail_CC1p1pi_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CC2p2h->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CC2p2h_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        /*
+        f3DHist_EAvail_CC2p2h_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CC2p2h_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        */
 
-      f3DHist_EAvail_CC1p1pi_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        
+      } else if ((amode == InputHandler::kCC1piponp) ||
+                (amode == InputHandler::kCC1pi0onn) ||
+                (amode == InputHandler::kCC1piponn)) {
+        f3DHist_CC1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                            d3dml_bx->sum_TProt, weight);
+        f3DHist_EAvail_CC1p1pi->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CC1p1pi_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
 
-    } else if ((amode == InputHandler::kCCmultipi) ||
-               (amode == InputHandler::kCCDIS)) {
-      f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                          d3dml_bx->sum_TProt, weight);
-      f3DHist_EAvail_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_CCDIS_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_CCDIS_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        /*
+        f3DHist_EAvail_CC1p1pi_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
 
-      f3DHist_EAvail_CCDIS_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CC1p1pi_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        */
+
+      } else if ((amode == InputHandler::kCCmultipi) ||
+                (amode == InputHandler::kCCDIS)) {
+        f3DHist_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                            d3dml_bx->sum_TProt, weight);
+        f3DHist_EAvail_CCDIS->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CCDIS_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        /*
+        f3DHist_EAvail_CCDIS_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_CCDIS_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+
+        
+        */
 
 
-    } else {
-      f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-                          d3dml_bx->sum_TProt, weight);
-      f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_Other_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_Other_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      f3DHist_EAvail_Other_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
+      } else {
+        f3DHist_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+                            d3dml_bx->sum_TProt, weight);
+        f3DHist_EAvail_Other->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_Other_pzbins_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        /*
+        f3DHist_EAvail_Other_pzbins_uniform->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        f3DHist_EAvail_Other_pzbins_uniform_double->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        
+        */
+      }
+
+      //if statments to fill W hists
+      if (W < 1.4) {
+        f3DHist_EAvail_lowW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        //std::cout << " W should be less than 1.4 , it is" << W <<std::endl;
+      } else if (1.4 < W && W < 2.0) {
+        f3DHist_EAvail_midW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+      // std::cout << " W should be 1.4 < W < 2.0 , it is" << W <<std::endl;
+      } 
+      else if (W > 2.0){
+        f3DHist_EAvail_highW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
+        d3dml_bx->E_Avail, weight);
+        //std::cout << " W should be > 2.0 , it is" << W <<std::endl;
+      } 
     }
-
-     //if statments to fill W hists
-    if (W < 1.4) {
-      f3DHist_EAvail_lowW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      //std::cout << " W should be less than 1.4 , it is" << W <<std::endl;
-    } else if (1.4 < W && W < 2.0) {
-      f3DHist_EAvail_midW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-     // std::cout << " W should be 1.4 < W < 2.0 , it is" << W <<std::endl;
-    } 
-    else if (W > 2.0){
-      f3DHist_EAvail_highW->Fill(d3dml_bx->p_perp, d3dml_bx->p_para,
-      d3dml_bx->E_Avail, weight);
-      //std::cout << " W should be > 2.0 , it is" << W <<std::endl;
-    } 
+    else {highenergy_nu=highenergy_nu+1;
+            }
   }
+
+
+
+
   //********************************************************************
   bool isSignal(FitEvent *event) {
     //********************************************************************
@@ -589,16 +634,62 @@ public:
     return SignalDef::isCCincLowRecoil_MINERvA(event, EnuMin, EnuMax);
   }
 
+  
+  
+  void Create2DHistogram(std::unique_ptr<TH3D> const &h){ //
+        h->Write();
+        h->SetDirectory(nullptr);
+        TH1::SetDefaultSumw2(true);
+        std::cout<<"making 2D hist"<<std::endl;
+        int number_of_pt_bins = h->GetXaxis()->GetNbins();
+        int number_of_pz_bins = h->GetYaxis()->GetNbins();
+        int number_of_EAvail_bins = h->GetZaxis()->GetNbins();
+        TH3* ptslice = (TH3*)h->Clone();
+        //TH2D *ptslice_2D = new TH2D("ptslice_2D", "ptslice_2D", , number_of_pz_bins,number_of_EAvail_bins );
+        for (int x = 0; x < number_of_pt_bins - 1 ; ++x) {
+            std::cout<<"making slice in pt"<< x+1 << std::endl;
+            ptslice->GetXaxis()->SetRange(x+1,x+1); //take slice of width of a bin in pt
+            auto ptslice_2D= std::unique_ptr<TH2>(static_cast<TH2*>(ptslice->Project3D("yz"))); 
+
+            std::stringstream ss;
+            ss <<  "twodprojection_ptbin"<< x+1 <<  h->GetName()  ;
+
+            std::stringstream title;
+            title <<  "p_t"<< h->GetXaxis()->GetBinLowEdge(x + 1) << " < p_t < "
+            << h->GetXaxis()->GetBinUpEdge(x + 1) << " [GeV/c], " << "p_z"<< 
+            h->GetYaxis()->GetBinLowEdge(x + 1) << " < p_z < "<< h->GetYaxis()->GetBinUpEdge(x + 1) << " [GeV/c], "
+            <<h->GetZaxis()->GetBinLowEdge(x + 1) << " < E_avail < "<< h->GetYaxis()->GetBinUpEdge(x + 1) << " [GeV/c], " ;
+            
+            std::string s = ss.str();
+            std::cout<< "ss for 2D" << s <<std::endl;
+
+            ptslice_2D->SetName(ss.str().c_str());
+            ptslice_2D->SetTitle(title.str().c_str());
+            ptslice_2D->GetYaxis()->SetTitle("pz (GeV) ");
+            ptslice_2D->GetZaxis()->SetTitle("Available Energy (GeV) ");
+            
+            ptslice_2D->Write();
+            ptslice_2D->SetDirectory(nullptr);
+          
+      }
+      
+      
+  }
+  
+
   void SplitWrite3D(std::unique_ptr<TH3D> const &h) {
+
+  std::cout<<"number of Enu < 8GeV"<< lowenergy_nu << std::endl;
+  std::cout<<"number of Enu > 8GeV"<< highenergy_nu << std::endl;
     h->Write();
     h->SetDirectory(nullptr);
-
+    TH1::SetDefaultSumw2(true);
     std::ofstream outputFile1DALL("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/all1Dbinerrors.txt"); // create a new output file or overwrite an existing one
        
     auto ptpzproj = std::unique_ptr<TH2>(static_cast<TH2*>(h->Project3D("yx")));
     std::string hist_2Dname = ptpzproj->GetName();
-    std::ofstream outputFile(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/2Dbinerrors" + hist_2Dname + ".txt").c_str()); // create a new output file or overwrite an existing one
-    outputFile << " Bin errors for 2D projection histogram " << ptpzproj->GetName() << "      \n" ;
+    std::ofstream outputFile(("/root/software/nuisance_version2/nuisance/dune3minervalike_v2/dune3minervalike/binerrors/2Dbinerrors" +hist_2Dname+ ".txt").c_str()); // create a new output file or overwrite an existing one
+    outputFile << " Bin errors for 2D projection histogram " << h->GetName() << "      \n" ;
 
       int number_of_pt_bins = h->GetXaxis()->GetNbins();
       int number_of_pz_bins = h->GetYaxis()->GetNbins();
@@ -606,6 +697,7 @@ public:
 
       std::cout << "The 3D histogram " << h->GetName() << "has" << number_of_pt_bins << "bins in pt (x axis) and " << number_of_pz_bins << "Pz bins" <<"and" << h->GetZaxis()->GetNbins()<< "energy bins"<<std::endl;
       for (int x = 0; x < h->GetXaxis()->GetNbins(); ++x) {
+  
         for (int y = 0; y < h->GetYaxis()->GetNbins(); ++y) {
           TH1 *proj =
               h->ProjectionZ((std::string(h->GetName()) + "_x" +
@@ -613,7 +705,7 @@ public:
                                 .c_str(),
                                 x+1, x+1 , y+1 , y+1 , "e");
     
-
+        
         std::stringstream ss;
         ss << h->GetXaxis()->GetBinLowEdge(x + 1) << " < p_t < "
            << h->GetXaxis()->GetBinUpEdge(x + 1) << " [GeV/c], "
@@ -627,8 +719,8 @@ public:
         double x_bin_width_pt = h->GetXaxis()->GetBinUpEdge(x + 1) - h->GetXaxis()->GetBinLowEdge(x + 1);
         double y_bin_width_pz = h->GetYaxis()->GetBinUpEdge(y + 1) - h->GetYaxis()->GetBinLowEdge(y + 1);
       
-        proj->Scale(1.0); 
-       // proj->Scale(1.0/proj_cell_area,"WIDTH"); 
+        //proj->Scale(1.0); 
+        proj->Scale(1.0/proj_cell_area,"WIDTH"); 
         //proj->Scale(fScaleFactor/proj_cell_area,"WIDTH"); 
        // proj->Scale(proj_cell_area/fScaleFactor , "WIDTH"); //, "WIDTH"    fScaleFactor /
         //std::cout<< "proj_cell_area  =  " << proj_cell_area  <<std::endl;
@@ -658,7 +750,6 @@ public:
           outputFile1D << "Sqrt_Bin_Content " << sqrt_bincontent1D << "  " ;
           outputFile1D << "Bin_Error_ROOT " << proj->GetBinError(n) << "  \n ";
           
-
           outputFile1DALL << "Histogram_name " << proj->GetName() << "  "  << " Histogram_noofbins " << binsin1Dhist << "  \n";
           outputFile1DALL << "Histogram_binwidth " <<proj->GetXaxis()->GetBinWidth(n)<< "  ";
           outputFile1DALL << "Bin_number " << proj->GetBin(n) << "  ";
@@ -688,6 +779,8 @@ public:
         proj->SetDirectory(nullptr);
         delete proj;
       }
+
+       
     }
     outputFile.close(); // close the file when done
     outputFile1DALL.close();
@@ -698,9 +791,7 @@ public:
 
   }
 
-  void Write(std::string drawOpt) {
-
-    
+  void Write(std::string drawOpt) {    
     SplitWrite3D(f3DHist);
     SplitWrite3D(f3DHist_CCQE);
     SplitWrite3D(f3DHist_CC2p2h);
@@ -715,8 +806,11 @@ public:
     SplitWrite3D(f3DHist_EAvail_CCDIS);
     SplitWrite3D(f3DHist_EAvail_Other);
 
+    
+    
 
     //SplitWrite3D(f3DHist_EAvail_pzbins_double);
+    /*
     SplitWrite3D(f3DHist_EAvail_pzbins_uniform);
     SplitWrite3D(f3DHist_EAvail_pzbins_uniform_double);
     SplitWrite3D(f3DHist_EAvail_CCQE_pzbins_uniform);
@@ -731,19 +825,43 @@ public:
     SplitWrite3D(f3DHist_EAvail_CC1p1pi_pzbins_uniform_double);
     SplitWrite3D(f3DHist_EAvail_CCDIS_pzbins_uniform_double);
     SplitWrite3D(f3DHist_EAvail_Other_pzbins_uniform_double);
-
+    */
     SplitWrite3D(f3DHist_EAvail_pzbins_double);
     SplitWrite3D(f3DHist_EAvail_CCQE_pzbins_double);
     SplitWrite3D(f3DHist_EAvail_CC2p2h_pzbins_double);
     SplitWrite3D(f3DHist_EAvail_CC1p1pi_pzbins_double);
     SplitWrite3D(f3DHist_EAvail_CCDIS_pzbins_double);
     SplitWrite3D(f3DHist_EAvail_Other_pzbins_double);
+    
+   
 
     SplitWrite3D(f3DHist_EAvail_lowW);
     SplitWrite3D(f3DHist_EAvail_midW);
     SplitWrite3D(f3DHist_EAvail_highW);
-    
 
+
+
+    Create2DHistogram(f3DHist_EAvail);
+    Create2DHistogram(f3DHist_EAvail_CCQE);
+    Create2DHistogram(f3DHist_EAvail_CC2p2h);
+    Create2DHistogram(f3DHist_EAvail_CC1p1pi);
+    Create2DHistogram(f3DHist_EAvail_CCDIS);
+    Create2DHistogram(f3DHist_EAvail_Other);
+    
+    f3DHist_EAvail->Write();
+    f3DHist_EAvail_CCQE->Write();
+    f3DHist_EAvail_CC2p2h->Write();
+    f3DHist_EAvail_CC1p1pi->Write();
+    f3DHist_EAvail_CCDIS->Write();
+    f3DHist_EAvail_Other->Write();
+    f1DHist_EAvail_true_nuenergy->Write();
+
+    f3DHist_EAvail_pzbins_double->Write();
+    f3DHist_EAvail_CCQE_pzbins_double->Write();
+    f3DHist_EAvail_CC2p2h_pzbins_double->Write();
+    f3DHist_EAvail_CC1p1pi_pzbins_double->Write();
+    f3DHist_EAvail_CCDIS_pzbins_double->Write();
+    f3DHist_EAvail_Other_pzbins_double->Write();
 
     // we have to tidy this up in this SO if we don't want horrible crashes on
     // program tear down
@@ -769,6 +887,9 @@ public:
     f3DHist_EAvail_CCDIS->Reset();
     f3DHist_EAvail_Other->Reset();
 
+    f1DHist_EAvail_true_nuenergy->Reset();
+
+    /*
     f3DHist_EAvail_pzbins_uniform->Reset();
     f3DHist_EAvail_CCQE_pzbins_uniform->Reset();
     f3DHist_EAvail_CC2p2h_pzbins_uniform->Reset();
@@ -784,7 +905,7 @@ public:
     f3DHist_EAvail_Other_pzbins_uniform_double->Reset();
 
     f3DHist_EAvail_pzbins_uniform_double->Reset();
-    
+    */
 
     f3DHist_EAvail_pzbins_double->Reset();
     f3DHist_EAvail_CCQE_pzbins_double->Reset();
@@ -792,10 +913,11 @@ public:
     f3DHist_EAvail_CC1p1pi_pzbins_double->Reset();
     f3DHist_EAvail_CCDIS_pzbins_double->Reset();
     f3DHist_EAvail_Other_pzbins_double->Reset();
-
+    
     f3DHist_EAvail_lowW->Reset();
     f3DHist_EAvail_midW->Reset();
     f3DHist_EAvail_highW->Reset();
 
   }
+  
 };
